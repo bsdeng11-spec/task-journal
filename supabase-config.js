@@ -1,16 +1,10 @@
 /**
  * Supabase Project Configuration
- * 
- * Replace with your Supabase Project URL and public 'anon' key.
- * You can find these in your Supabase dashboard:
- * Settings -> API -> Project URL & Project API Keys (anon public)
+ * Configured with live Supabase project for Task Journal
  */
 window.SUPABASE_CONFIG = {
-    // Paste your Supabase project URL here (e.g., "https://xyzcompany.supabase.co")
-    url: "",
-
-    // Paste your Supabase anon public key here (starts with "ey...")
-    anonKey: ""
+    url: "https://dsmtjpftzllxudvirapm.supabase.co",
+    anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRzbXRqcGZ0emxseHVkdmlyYXBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEyOTU4MDEsImV4cCI6MjEwNjg3MTgwMX0.H7VNk0H68wf_ctBRtTm9RinvQZHtqnjVEhVdkFjuIQQ"
 };
 
 // Allow override from localStorage if set via the on-page setup modal
