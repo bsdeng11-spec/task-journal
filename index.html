@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Journal - 15 Days Report</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css?v=bim-v3">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="static/js/supabase-client.js"></script>
+</head>
+<body data-bim-theme="revit">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand-group">
+                <a href="index.html" class="brand-logo">
+                    <span class="brand-icon">📐</span>
+                    <span class="brand-text"><strong>TASK JOURNAL</strong> <small class="text-muted">BIM Modeling Portal</small></span>
+                </a>
+                <div class="bim-status-pill">
+                    <span class="status-dot"></span>
+                    <span class="status-text">BIM 3D MODELING</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <!-- Supabase Cloud DB Connection Indicator -->
+                <div class="supabase-status-pill disconnected" id="supabaseStatusPill" onclick="openSupabaseConfigModal()" title="Configure Supabase Connection">
+                    <span class="status-dot"></span>
+                    <span>⚙️ Connect Supabase</span>
+                </div>
+
+                <!-- Current Active Executor Badge (Image 2 trigger) -->
+                <div class="nav-executor-badge" id="navExecutorBadge" onclick="openEnterSystemModal(true)" title="Current Executor - Click to Switch or Change Name">
+                    <span class="executor-avatar">👤</span>
+                    <div class="executor-label-wrap">
+                        <span class="executor-status-label">EXECUTOR</span>
+                        <strong id="navExecutorNameText">Choose Name</strong>
+                    </div>
+                    <span class="executor-switch-tag">Switch ▾</span>
+                </div>
+
+                <!-- BIM Viewport Background switcher -->
+                <div class="bim-viewport-controls" title="Change BIM Viewport Background">
+                    <span class="bim-mode-label">VIEWPORT:</span>
+                    <button type="button" class="bim-mode-btn active" data-theme="revit" onclick="setBimTheme('revit')">📐 Revit 3D</button>
+                    <button type="button" class="bim-mode-btn" data-theme="blueprint" onclick="setBimTheme('blueprint')">🟦 Blueprint</button>
+                    <button type="button" class="bim-mode-btn" data-theme="cad-light" onclick="setBimTheme('cad-light')">📋 CAD Light</button>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link active">✍️ Member Timesheet</a>
+                    <a href="dashboard.html" class="nav-link">📊 Manager Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-container">
+            <div class="portal-header card">
+                <div class="portal-header-left">
+                    <h2>✍️ 15-Day Task Journal Entry</h2>
+                    <p class="subtitle">Log your daily project tasks and general hours. Save your entries anytime.</p>
+                </div>
+                <div class="portal-header-right">
+                    <div class="hours-badge-container">
+                        <span class="hours-label">Your Logged Hours</span>
+                        <div class="hours-meter">
+                            <span id="totalHoursDisplay" class="hours-value">0.0</span>
+                            <span class="hours-target">/ 99 hrs</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="hoursProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Member and Period Selection Controls -->
+            <div class="controls-card card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                            <label for="memberSelect"><strong>Team Member (Executor)</strong></label>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="openEnterSystemModal(true)" style="padding: 2px 8px; font-size: 0.76rem; border-color: #EA580C; color: #EA580C;">
+                                👤 Switch / Change Name
+                            </button>
+                        </div>
+                        <select id="memberSelect" class="form-control">
+                            <option value="">-- Choose Your Name --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><strong>MP Number</strong></label>
+                        <input type="text" id="mpDisplay" class="form-control" readonly placeholder="Auto-filled">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startDate"><strong>Period Start Date</strong></label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endDate"><strong>Period End Date</strong></label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="periodTitle"><strong>Report Period Label</strong></label>
+                        <input type="text" id="periodTitle" class="form-control" placeholder="e.g. SEP 16-30">
+                    </div>
+                </div>
+
+                <div class="action-toolbar">
+                    <button type="button" id="btnPrefill" class="btn btn-secondary">
+                        ⚡ Auto-Fill Period Days (15 Days)
+                    </button>
+                    <button type="button" id="btnAddRow" class="btn btn-secondary">
+                        ➕ Add Custom Row
+                    </button>
+                    <button type="button" id="btnSave" class="btn btn-primary">
+                        💾 Save My Journal Entries
+                    </button>
+                    <span id="saveStatus" class="save-status-text"></span>
+                </div>
+            </div>
+
+            <!-- Timesheet Grid -->
+            <div class="table-card card">
+                <div class="table-responsive">
+                    <table class="timesheet-table" id="taskTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">Date</th>
+                                <th style="width: 130px;">Name (Project #)</th>
+                                <th style="width: 160px;">Task</th>
+                                <th>Description</th>
+                                <th style="width: 100px;">General Hours</th>
+                                <th style="width: 220px;">Leave / Quick Tags</th>
+                                <th style="width: 70px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr id="emptyRowPlaceholder">
+                                <td colspan="7" class="text-center text-muted" style="padding: 40px;">
+                                    Please select your name above to view and enter your tasks.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-total-row">
+                                <td colspan="4" style="text-align: right; font-weight: 700;">Grand Total Hours:</td>
+                                <td style="text-align: right; font-weight: 700;"><span id="totalHoursBottom">0.0</span> hrs</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predefined Common Task Types for BIM Autocomplete -->
+        <datalist id="taskTypeList">
+            <option value="Fixing">
+            <option value="Modelling">
+            <option value="Rebar">
+            <option value="Geometry">
+            <option value="Geometry and rebar">
+            <option value="Excavation">
+            <option value="Preparing DWG">
+            <option value="EX">
+            <option value="Fixing Geometry">
+            <option value="Comment update">
+            <option value="Model update">
+        </datalist>
+    </main>
+
+    <!-- BIM 3D Coordinate Axis Triad (UCS HUD) -->
+    <div class="bim-ucs-triad" id="bimUcsWidget" aria-hidden="true" title="BIM World Coordinate System">
+        <svg width="48" height="48" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="30" x2="30" y2="8" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="30,3 26,11 34,11" fill="#38BDF8"/>
+            <text x="34" y="13" fill="#38BDF8" font-size="10" font-family="'Inter', monospace" font-weight="700">Z</text>
+            <line x1="30" y1="30" x2="52" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="56,42 48,36 50,44" fill="#EF4444"/>
+            <text x="53" y="34" fill="#EF4444" font-size="10" font-family="'Inter', monospace" font-weight="700">X</text>
+            <line x1="30" y1="30" x2="11" y2="43" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="7,45 11,37 16,44" fill="#22C55E"/>
+            <text x="5" y="38" fill="#22C55E" font-size="10" font-family="'Inter', monospace" font-weight="700">Y</text>
+            <circle cx="30" cy="30" r="3.5" fill="#FFFFFF"/>
+        </svg>
+        <div class="bim-ucs-info">
+            <span class="bim-view-type" id="bimViewLabel">3D ORTHO</span>
+            <span class="bim-view-coord">GRID 1.0 &bull; WCS</span>
+        </div>
+    </div>
+
+    <!-- Task Management Journal Login / Entry Modal (Image 2) -->
+    <div id="enterSystemOverlay" class="system-entry-overlay" style="display: none;">
+        <div class="system-entry-card">
+            <div class="entry-lang-bar">
+                <button type="button" class="entry-lang-btn" data-lang="he" onclick="setEntryLang('he')">עברית</button>
+                <button type="button" class="entry-lang-btn active" data-lang="en" onclick="setEntryLang('en')">English</button>
+                <button type="button" class="entry-lang-btn" data-lang="ru" onclick="setEntryLang('ru')">Русский</button>
+                <button type="button" class="entry-lang-btn" data-lang="am" onclick="setEntryLang('am')">አማርኛ</button>
+            </div>
+
+            <div class="entry-icon-badge">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M9 12h6"></path>
+                    <path d="M9 16h6"></path>
+                </svg>
+            </div>
+
+            <h2 class="entry-title" id="entryTitle">Task Management Journal</h2>
+            <p class="entry-subtitle" id="entrySubtitle">Track construction work &amp; projects</p>
+
+            <div class="entry-form-body">
+                <label class="entry-label" id="entryLabel" for="modalMemberSelect">Select your name to enter the system</label>
+                
+                <div class="entry-input-container">
+                    <span class="entry-user-icon">👤</span>
+                    <select id="modalMemberSelect" class="entry-select-input" onchange="handleModalMemberChange()">
+                        <option value="" disabled selected>Select name...</option>
+                    </select>
+                </div>
+
+                <div id="modalNewMemberFields" class="entry-new-fields" style="display: none;">
+                    <div class="entry-field-group">
+                        <label class="entry-field-label">Executor Name</label>
+                        <input type="text" id="modalCustomName" class="form-control" placeholder="Enter executor full name...">
+                    </div>
+                    <div class="entry-field-group">
+                        <label class="entry-field-label">MP Number (Auto-assigned if blank)</label>
+                        <input type="text" id="modalCustomMp" class="form-control" placeholder="e.g. 9829">
+                    </div>
+                    <div class="entry-checkbox-group" id="renameOptionRow" style="display: none;">
+                        <label>
+                            <input type="checkbox" id="modalIsRenameCheckbox"> Update / rename existing member profile
+                        </label>
+                    </div>
+                </div>
+
+                <div id="entryErrorNotice" class="entry-error-box" style="display: none;"></div>
+
+                <button type="button" class="btn-enter-system" id="btnEnterSystemAction" onclick="submitSystemEntry()">
+                    <span class="enter-icon">➔</span>
+                    <span id="btnEnterLabel">Enter System</span>
+                </button>
+
+                <button type="button" class="btn-close-overlay" id="btnCloseOverlayBtn" onclick="closeEnterSystemModal()" style="display: none;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Configuration Modal -->
+    <div id="supabaseConfigModal" class="system-entry-overlay" style="display: none;">
+        <div class="system-entry-card" style="max-width: 500px;">
+            <div class="entry-icon-badge" style="background: #10B981; color: #fff;">
+                ⚡
+            </div>
+            <h2 class="entry-title">Connect Supabase Cloud Database</h2>
+            <p class="entry-subtitle">Enter your Supabase project credentials to store timesheets online.</p>
+
+            <div class="entry-form-body">
+                <div class="entry-field-group" style="text-align: left; margin-bottom: 12px;">
+                    <label class="entry-field-label" style="display:block; margin-bottom: 4px;"><strong>Supabase Project URL</strong></label>
+                    <input type="text" id="modalSupabaseUrl" class="form-control" placeholder="https://yourproject.supabase.co" style="width:100%;">
+                </div>
+
+                <div class="entry-field-group" style="text-align: left; margin-bottom: 16px;">
+                    <label class="entry-field-label" style="display:block; margin-bottom: 4px;"><strong>Supabase Anon Public Key</strong></label>
+                    <input type="text" id="modalSupabaseKey" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width:100%;">
+                </div>
+
+                <p style="font-size: 0.8rem; color: #64748B; text-align: left; line-height: 1.4; margin-bottom: 16px;">
+                    💡 Find these in your <strong>Supabase Dashboard</strong> &rarr; <strong>Project Settings</strong> &rarr; <strong>API</strong>.<br>
+                    Make sure you have run the queries from <code>supabase-schema.sql</code> in your SQL Editor!
+                </p>
+
+                <button type="button" class="btn-enter-system" onclick="saveSupabaseConfigModal()" style="background: #10B981;">
+                    <span>💾 Save &amp; Connect Database</span>
+                </button>
+
+                <button type="button" class="btn-close-overlay" onclick="closeSupabaseConfigModal()" style="display: block; margin-top: 8px;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>Task Journal System &bull; Dynamic Team Executors &bull; Standardized Consolidation &bull; BIM Modeling &amp; Engineering</p>
+        </div>
+    </footer>
+
+    <script>
+        // Language translations for Entry Modal (Image 2)
+        const ENTRY_LANGS = {
+            en: {
+                title: "Task Management Journal",
+                subtitle: "Track construction work & projects",
+                label: "Select your name to enter the system",
+                btn: "Enter System",
+                placeholder: "Select name..."
+            },
+            he: {
+                title: "יומן ניהול משימות",
+                subtitle: "מעקב אחר עבודות בנייה ופרויקטים",
+                label: "בחר את שמך כדי להיכנס למערכת",
+                btn: "כניסה למערכת",
+                placeholder: "בחר שם..."
+            },
+            ru: {
+                title: "Журнал управления задачами",
+                subtitle: "Учет строительных работ и проектов",
+                label: "Выберите свое имя для входа в систему",
+                btn: "Войти в систему",
+                placeholder: "Выберите имя..."
+            },
+            am: {
+                title: "የሥራ ተግባር መመዝገቢያ ጆርናል",
+                subtitle: "የኮንስትራክሽን ሥራዎችንና ፕሮጀክቶችን ይከታተሉ",
+                label: "ወደ ሲስተሙ ለመግባት ስምዎን ይምረጡ",
+                btn: "ወደ ሲስተሙ ግባ",
+                placeholder: "ስምዎን ይምረጡ..."
+            }
+        };
+
+        function setEntryLang(lang) {
+            document.querySelectorAll('.entry-lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+            const t = ENTRY_LANGS[lang] || ENTRY_LANGS.en;
+            document.getElementById('entryTitle').textContent = t.title;
+            document.getElementById('entrySubtitle').textContent = t.subtitle;
+            document.getElementById('entryLabel').textContent = t.label;
+            document.getElementById('btnEnterLabel').textContent = t.btn;
+            const defOpt = document.querySelector('#modalMemberSelect option[value=""]');
+            if (defOpt) defOpt.textContent = t.placeholder;
+        }
+
+        function setBimTheme(theme) {
+            document.body.setAttribute('data-bim-theme', theme);
+            try {
+                localStorage.setItem('bim_theme_preference', theme);
+            } catch(e) {}
+            document.querySelectorAll('.bim-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+            });
+            const viewLabel = document.getElementById('bimViewLabel');
+            if (viewLabel) {
+                if (theme === 'blueprint') viewLabel.textContent = 'BLUEPRINT 2D/3D';
+                else if (theme === 'cad-light') viewLabel.textContent = 'DRAFTING VIEW';
+                else viewLabel.textContent = '3D ORTHO VIEW';
+            }
+        }
+
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('bim_theme_preference') || 'revit';
+                setBimTheme(savedTheme);
+            } catch(e) {}
+        })();
+    </script>
+    <script src="static/js/app.js"></script>
+</body>
+</html>

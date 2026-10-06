@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+env/
+ENV/
+*.xlsx
+!templates/*.xlsx
+.DS_Store
+Thumbs.db
+task_journal.db

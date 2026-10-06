@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Task Journal - 15 Days Report{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=bim-v3">
+    {% block head %}{% endblock %}
+</head>
+<body data-bim-theme="revit">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand-group">
+                <a href="/" class="brand-logo">
+                    <span class="brand-icon">📐</span>
+                    <span class="brand-text"><strong>TASK JOURNAL</strong> <small class="text-muted">BIM Modeling Portal</small></span>
+                </a>
+                <div class="bim-status-pill">
+                    <span class="status-dot"></span>
+                    <span class="status-text">BIM 3D MODELING</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <!-- Current Active Executor Badge (Image 2 trigger) -->
+                <div class="nav-executor-badge" id="navExecutorBadge" onclick="openEnterSystemModal(true)" title="Current Executor - Click to Switch or Change Name">
+                    <span class="executor-avatar">👤</span>
+                    <div class="executor-label-wrap">
+                        <span class="executor-status-label">EXECUTOR</span>
+                        <strong id="navExecutorNameText">Choose Name</strong>
+                    </div>
+                    <span class="executor-switch-tag">Switch ▾</span>
+                </div>
+
+                <!-- BIM Viewport Background switcher -->
+                <div class="bim-viewport-controls" title="Change BIM Viewport Background">
+                    <span class="bim-mode-label">VIEWPORT:</span>
+                    <button type="button" class="bim-mode-btn active" data-theme="revit" onclick="setBimTheme('revit')">📐 Revit 3D</button>
+                    <button type="button" class="bim-mode-btn" data-theme="blueprint" onclick="setBimTheme('blueprint')">🟦 Blueprint</button>
+                    <button type="button" class="bim-mode-btn" data-theme="cad-light" onclick="setBimTheme('cad-light')">📋 CAD Light</button>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">✍️ Member Timesheet</a>
+                    <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">📊 Manager Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- BIM 3D Coordinate Axis Triad (UCS HUD) -->
+    <div class="bim-ucs-triad" id="bimUcsWidget" aria-hidden="true" title="BIM World Coordinate System">
+        <svg width="48" height="48" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Z Axis (Up - Cyan) -->
+            <line x1="30" y1="30" x2="30" y2="8" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="30,3 26,11 34,11" fill="#38BDF8"/>
+            <text x="34" y="13" fill="#38BDF8" font-size="10" font-family="'Inter', monospace" font-weight="700">Z</text>
+            
+            <!-- X Axis (Right - Red) -->
+            <line x1="30" y1="30" x2="52" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="56,42 48,36 50,44" fill="#EF4444"/>
+            <text x="53" y="34" fill="#EF4444" font-size="10" font-family="'Inter', monospace" font-weight="700">X</text>
+            
+            <!-- Y Axis (Left - Green) -->
+            <line x1="30" y1="30" x2="11" y2="43" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="7,45 11,37 16,44" fill="#22C55E"/>
+            <text x="5" y="38" fill="#22C55E" font-size="10" font-family="'Inter', monospace" font-weight="700">Y</text>
+            
+            <circle cx="30" cy="30" r="3.5" fill="#FFFFFF"/>
+        </svg>
+        <div class="bim-ucs-info">
+            <span class="bim-view-type" id="bimViewLabel">3D ORTHO</span>
+            <span class="bim-view-coord">GRID 1.0 &bull; WCS</span>
+        </div>
+    </div>
+
+    <!-- Task Management Journal Login / Entry Modal (Matching Image 2) -->
+    <div id="enterSystemOverlay" class="system-entry-overlay" style="display: none;">
+        <div class="system-entry-card">
+            <!-- Top Language Buttons -->
+            <div class="entry-lang-bar">
+                <button type="button" class="entry-lang-btn" data-lang="he" onclick="setEntryLang('he')">עברית</button>
+                <button type="button" class="entry-lang-btn active" data-lang="en" onclick="setEntryLang('en')">English</button>
+                <button type="button" class="entry-lang-btn" data-lang="ru" onclick="setEntryLang('ru')">Русский</button>
+                <button type="button" class="entry-lang-btn" data-lang="am" onclick="setEntryLang('am')">አማርኛ</button>
+            </div>
+
+            <!-- Orange Icon Badge matching Image 2 -->
+            <div class="entry-icon-badge">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    <path d="M9 12h6"></path>
+                    <path d="M9 16h6"></path>
+                </svg>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <h2 class="entry-title" id="entryTitle">Task Management Journal</h2>
+            <p class="entry-subtitle" id="entrySubtitle">Track construction work &amp; projects</p>
+
+            <!-- Form Body -->
+            <div class="entry-form-body">
+                <label class="entry-label" id="entryLabel" for="modalMemberSelect">Select your name to enter the system</label>
+                
+                <div class="entry-input-container">
+                    <span class="entry-user-icon">👤</span>
+                    <select id="modalMemberSelect" class="entry-select-input" onchange="handleModalMemberChange()">
+                        <option value="" disabled selected>Select name...</option>
+                    </select>
+                </div>
+
+                <!-- Custom / New Name Fields (Reveals when "Add New Member" is selected or when renaming) -->
+                <div id="modalNewMemberFields" class="entry-new-fields" style="display: none;">
+                    <div class="entry-field-group">
+                        <label class="entry-field-label">Executor Name</label>
+                        <input type="text" id="modalCustomName" class="form-control" placeholder="Enter executor full name...">
+                    </div>
+                    <div class="entry-field-group">
+                        <label class="entry-field-label">MP Number (Auto-assigned if blank)</label>
+                        <input type="text" id="modalCustomMp" class="form-control" placeholder="e.g. 9829">
+                    </div>
+                    <div class="entry-checkbox-group" id="renameOptionRow" style="display: none;">
+                        <label>
+                            <input type="checkbox" id="modalIsRenameCheckbox"> Update / rename existing member profile
+                        </label>
+                    </div>
+                </div>
+
+                <div id="entryErrorNotice" class="entry-error-box" style="display: none;"></div>
+
+                <!-- Submit Button (Image 2 style) -->
+                <button type="button" class="btn-enter-system" id="btnEnterSystemAction" onclick="submitSystemEntry()">
+                    <span class="enter-icon">➔</span>
+                    <span id="btnEnterLabel">Enter System</span>
+                </button>
+
+                <button type="button" class="btn-close-overlay" id="btnCloseOverlayBtn" onclick="closeEnterSystemModal()" style="display: none;">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>Task Journal System &bull; Dynamic Team Executors &bull; Standardized Consolidation &bull; BIM Modeling &amp; Engineering</p>
+        </div>
+    </footer>
+
+    <script>
+        // Language translations for Entry Modal (Image 2)
+        const ENTRY_LANGS = {
+            en: {
+                title: "Task Management Journal",
+                subtitle: "Track construction work & projects",
+                label: "Select your name to enter the system",
+                btn: "Enter System",
+                placeholder: "Select name..."
+            },
+            he: {
+                title: "יומן ניהול משימות",
+                subtitle: "מעקב אחר עבודות בנייה ופרויקטים",
+                label: "בחר את שמך כדי להיכנס למערכת",
+                btn: "כניסה למערכת",
+                placeholder: "בחר שם..."
+            },
+            ru: {
+                title: "Журнал управления задачами",
+                subtitle: "Учет строительных работ и проектов",
+                label: "Выберите свое имя для входа в систему",
+                btn: "Войти в систему",
+                placeholder: "Выберите имя..."
+            },
+            am: {
+                title: "የሥራ ተግባር መመዝገቢያ ጆርናል",
+                subtitle: "የኮንስትራክሽን ሥራዎችንና ፕሮጀክቶችን ይከታተሉ",
+                label: "ወደ ሲስተሙ ለመግባት ስምዎን ይምረጡ",
+                btn: "ወደ ሲስተሙ ግባ",
+                placeholder: "ስምዎን ይምረጡ..."
+            }
+        };
+
+        function setEntryLang(lang) {
+            document.querySelectorAll('.entry-lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+            });
+            const t = ENTRY_LANGS[lang] || ENTRY_LANGS.en;
+            document.getElementById('entryTitle').textContent = t.title;
+            document.getElementById('entrySubtitle').textContent = t.subtitle;
+            document.getElementById('entryLabel').textContent = t.label;
+            document.getElementById('btnEnterLabel').textContent = t.btn;
+            const defOpt = document.querySelector('#modalMemberSelect option[value=""]');
+            if (defOpt) defOpt.textContent = t.placeholder;
+        }
+
+        function setBimTheme(theme) {
+            document.body.setAttribute('data-bim-theme', theme);
+            try {
+                localStorage.setItem('bim_theme_preference', theme);
+            } catch(e) {}
+            document.querySelectorAll('.bim-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+            });
+            const viewLabel = document.getElementById('bimViewLabel');
+            if (viewLabel) {
+                if (theme === 'blueprint') viewLabel.textContent = 'BLUEPRINT 2D/3D';
+                else if (theme === 'cad-light') viewLabel.textContent = 'DRAFTING VIEW';
+                else viewLabel.textContent = '3D ORTHO VIEW';
+            }
+        }
+
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('bim_theme_preference') || 'revit';
+                setBimTheme(savedTheme);
+            } catch(e) {}
+        })();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

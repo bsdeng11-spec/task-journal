@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}My Task Journal - 15 Days Entry{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="portal-header card">
+        <div class="portal-header-left">
+            <h2>✍️ 15-Day Task Journal Entry</h2>
+            <p class="subtitle">Log your daily project tasks and general hours. Save your entries anytime.</p>
+        </div>
+        <div class="portal-header-right">
+            <div class="hours-badge-container">
+                <span class="hours-label">Your Logged Hours</span>
+                <div class="hours-meter">
+                    <span id="totalHoursDisplay" class="hours-value">0.0</span>
+                    <span class="hours-target">/ 99 hrs</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="hoursProgressBar" class="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member and Period Selection Controls -->
+    <div class="controls-card card">
+        <div class="form-grid">
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                    <label for="memberSelect"><strong>Team Member (Executor)</strong></label>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openEnterSystemModal(true)" style="padding: 2px 8px; font-size: 0.76rem; border-color: #EA580C; color: #EA580C;">
+                        👤 Switch / Change Name
+                    </button>
+                </div>
+                <select id="memberSelect" class="form-control">
+                    <option value="">-- Choose Your Name --</option>
+                    {% for m in members %}
+                    <option value="{{ m.id }}" data-mp="{{ m.mp_number }}">{{ m.name }} (MP# {{ m.mp_number }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label><strong>MP Number</strong></label>
+                <input type="text" id="mpDisplay" class="form-control" readonly placeholder="Auto-filled">
+            </div>
+
+            <div class="form-group">
+                <label for="startDate"><strong>Period Start Date</strong></label>
+                <input type="date" id="startDate" class="form-control" value="{{ period.start_date }}">
+            </div>
+
+            <div class="form-group">
+                <label for="endDate"><strong>Period End Date</strong></label>
+                <input type="date" id="endDate" class="form-control" value="{{ period.end_date }}">
+            </div>
+
+            <div class="form-group">
+                <label for="periodTitle"><strong>Report Period Label</strong></label>
+                <input type="text" id="periodTitle" class="form-control" value="{{ period.period_title }}">
+            </div>
+        </div>
+
+        <div class="action-toolbar">
+            <button type="button" id="btnPrefill" class="btn btn-secondary">
+                ⚡ Auto-Fill Period Days (15 Days)
+            </button>
+            <button type="button" id="btnAddRow" class="btn btn-secondary">
+                ➕ Add Custom Row
+            </button>
+            <button type="button" id="btnSave" class="btn btn-primary">
+                💾 Save My Journal Entries
+            </button>
+            <span id="saveStatus" class="save-status-text"></span>
+        </div>
+    </div>
+
+    <!-- Timesheet Grid -->
+    <div class="table-card card">
+        <div class="table-responsive">
+            <table class="timesheet-table" id="taskTable">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Date</th>
+                        <th style="width: 130px;">Name (Project #)</th>
+                        <th style="width: 160px;">Task</th>
+                        <th>Description</th>
+                        <th style="width: 100px;">General Hours</th>
+                        <th style="width: 220px;">Leave / Quick Tags</th>
+                        <th style="width: 70px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr id="emptyRowPlaceholder">
+                        <td colspan="7" class="text-center text-muted" style="padding: 40px;">
+                            Please select your name above to view and enter your tasks.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Bottom Save Floating Bar on Mobile/Scroll -->
+    <div class="bottom-action-bar">
+        <div class="bottom-info">
+            Total Hours: <strong id="totalHoursBottom">0.0</strong> / 99 hrs
+        </div>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('btnSave').click()">
+            💾 Save Entries
+        </button>
+    </div>
+</div>
+
+<!-- Datalist for fast task type selection -->
+<datalist id="taskTypeList">
+    {% for t in task_types %}
+    <option value="{{ t }}">
+    {% endfor %}
+</datalist>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const TASK_OPTIONS = {{ task_types | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}

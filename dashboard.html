@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard - 15-Day Task Journal Consolidation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/style.css?v=bim-v3">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="static/js/supabase-client.js"></script>
+    <!-- ExcelJS CDN for Client-Side Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="static/js/excel-export.js"></script>
+    <script src="static/js/dashboard.js"></script>
+</head>
+<body data-bim-theme="revit">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand-group">
+                <a href="index.html" class="brand-logo">
+                    <span class="brand-icon">📐</span>
+                    <span class="brand-text"><strong>TASK JOURNAL</strong> <small class="text-muted">BIM Modeling Portal</small></span>
+                </a>
+                <div class="bim-status-pill">
+                    <span class="status-dot"></span>
+                    <span class="status-text">BIM 3D MODELING</span>
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <!-- Supabase Cloud DB Connection Indicator -->
+                <div class="supabase-status-pill disconnected" id="supabaseStatusPill" onclick="openSupabaseConfigModal()" title="Configure Supabase Connection">
+                    <span class="status-dot"></span>
+                    <span>⚙️ Connect Supabase</span>
+                </div>
+
+                <!-- Current Active Executor Badge -->
+                <div class="nav-executor-badge" id="navExecutorBadge" onclick="openEnterSystemModal(true)" title="Current Executor - Click to Switch or Change Name">
+                    <span class="executor-avatar">👤</span>
+                    <div class="executor-label-wrap">
+                        <span class="executor-status-label">EXECUTOR</span>
+                        <strong id="navExecutorNameText">Choose Name</strong>
+                    </div>
+                    <span class="executor-switch-tag">Switch ▾</span>
+                </div>
+
+                <!-- BIM Viewport Background switcher -->
+                <div class="bim-viewport-controls" title="Change BIM Viewport Background">
+                    <span class="bim-mode-label">VIEWPORT:</span>
+                    <button type="button" class="bim-mode-btn active" data-theme="revit" onclick="setBimTheme('revit')">📐 Revit 3D</button>
+                    <button type="button" class="bim-mode-btn" data-theme="blueprint" onclick="setBimTheme('blueprint')">🟦 Blueprint</button>
+                    <button type="button" class="bim-mode-btn" data-theme="cad-light" onclick="setBimTheme('cad-light')">📋 CAD Light</button>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="index.html" class="nav-link">✍️ Member Timesheet</a>
+                    <a href="dashboard.html" class="nav-link active">📊 Manager Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-container">
+            <div class="dashboard-header card">
+                <div class="dash-title-block">
+                    <h2>📊 Manager Consolidation Dashboard</h2>
+                    <p class="subtitle">Monitor all 23 team members' progress and export the final uniform report with one click.</p>
+                </div>
+                <div class="dash-actions">
+                    <button type="button" id="btnExportExcel" class="btn btn-export">
+                        📥 Download Master Excel Report (.xlsx)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Period Filter Controls -->
+            <div class="controls-card card">
+                <div class="form-grid-period">
+                    <div class="form-group">
+                        <label><strong>Report Period Label</strong></label>
+                        <input type="text" id="dashPeriodTitle" class="form-control" placeholder="e.g. SEP 16-30">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>Start Date</strong></label>
+                        <input type="date" id="dashStartDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>End Date</strong></label>
+                        <input type="date" id="dashEndDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>Year</strong></label>
+                        <input type="text" id="dashYearLabel" class="form-control">
+                    </div>
+                    <div class="form-group" style="align-self: flex-end;">
+                        <button type="button" id="btnFilterPeriod" class="btn btn-secondary" style="width: 100%;">
+                            🔄 Filter Period
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Stats Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card card">
+                    <div class="kpi-title">Grand Total Team Hours</div>
+                    <div class="kpi-value text-primary" id="kpiGrandTotal">0.0 <small>hrs</small></div>
+                    <div class="kpi-desc">Consolidated across all 23 members</div>
+                </div>
+
+                <div class="kpi-card card">
+                    <div class="kpi-title">Members Completed (99 hrs)</div>
+                    <div class="kpi-value text-success" id="kpiCompleted">
+                        0 <small>/ 23</small>
+                    </div>
+                    <div class="kpi-desc" id="kpiCompletionRate">
+                        0% ready for export
+                    </div>
+                </div>
+
+                <div class="kpi-card card">
+                    <div class="kpi-title">Expected Target Hours</div>
+                    <div class="kpi-value text-secondary" id="kpiTarget">2277 <small>hrs</small></div>
+                    <div class="kpi-desc">23 members &times; 99 hrs per 15-day period</div>
+                </div>
+            </div>
+
+            <!-- Member Breakdown Table -->
+            <div class="table-card card">
+                <div class="table-header-row">
+                    <h3 id="dashPeriodHeading">👥 Team Members Status</h3>
+                    <input type="text" id="searchMember" placeholder="🔍 Search member name or MP#..." class="table-search-input">
+                </div>
+                <div class="table-responsive">
+                    <table class="dashboard-table" id="memberSummaryTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Team Member</th>
+                                <th style="width: 120px;">MP Number</th>
+                                <th style="width: 160px;">Logged Hours</th>
+                                <th style="width: 140px;">Target Hours</th>
+                                <th style="width: 140px;">Status</th>
+                                <th style="width: 140px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted" style="padding: 30px;">
+                                    Loading team members...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- BIM 3D Coordinate Axis Triad (UCS HUD) -->
+    <div class="bim-ucs-triad" id="bimUcsWidget" aria-hidden="true" title="BIM World Coordinate System">
+        <svg width="48" height="48" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="30" y1="30" x2="30" y2="8" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="30,3 26,11 34,11" fill="#38BDF8"/>
+            <text x="34" y="13" fill="#38BDF8" font-size="10" font-family="'Inter', monospace" font-weight="700">Z</text>
+            <line x1="30" y1="30" x2="52" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="56,42 48,36 50,44" fill="#EF4444"/>
+            <text x="53" y="34" fill="#EF4444" font-size="10" font-family="'Inter', monospace" font-weight="700">X</text>
+            <line x1="30" y1="30" x2="11" y2="43" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="7,45 11,37 16,44" fill="#22C55E"/>
+            <text x="5" y="38" fill="#22C55E" font-size="10" font-family="'Inter', monospace" font-weight="700">Y</text>
+            <circle cx="30" cy="30" r="3.5" fill="#FFFFFF"/>
+        </svg>
+        <div class="bim-ucs-info">
+            <span class="bim-view-type" id="bimViewLabel">3D ORTHO</span>
+            <span class="bim-view-coord">GRID 1.0 &bull; WCS</span>
+        </div>
+    </div>
+
+    <!-- Supabase Configuration Modal -->
+    <div id="supabaseConfigModal" class="system-entry-overlay" style="display: none;">
+        <div class="system-entry-card" style="max-width: 500px;">
+            <div class="entry-icon-badge" style="background: #10B981; color: #fff;">
+                ⚡
+            </div>
+            <h2 class="entry-title">Connect Supabase Cloud Database</h2>
+            <p class="entry-subtitle">Enter your Supabase credentials to sync timesheets in the cloud.</p>
+
+            <div class="entry-form-body">
+                <div class="entry-field-group" style="text-align: left; margin-bottom: 12px;">
+                    <label class="entry-field-label" style="display:block; margin-bottom: 4px;"><strong>Supabase Project URL</strong></label>
+                    <input type="text" id="modalSupabaseUrl" class="form-control" placeholder="https://yourproject.supabase.co" style="width:100%;">
+                </div>
+
+                <div class="entry-field-group" style="text-align: left; margin-bottom: 16px;">
+                    <label class="entry-field-label" style="display:block; margin-bottom: 4px;"><strong>Supabase Anon Public Key</strong></label>
+                    <input type="text" id="modalSupabaseKey" class="form-control" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width:100%;">
+                </div>
+
+                <p style="font-size: 0.8rem; color: #64748B; text-align: left; line-height: 1.4; margin-bottom: 16px;">
+                    💡 Find these in your <strong>Supabase Dashboard</strong> &rarr; <strong>Project Settings</strong> &rarr; <strong>API</strong>.<br>
+                    Make sure you have run the queries from <code>supabase-schema.sql</code> in your SQL Editor!
+                </p>
+
+                <button type="button" class="btn-enter-system" onclick="saveSupabaseConfigModal()" style="background: #10B981;">
+                    <span>💾 Save &amp; Connect Database</span>
+                </button>
+
+                <button type="button" class="btn-close-overlay" onclick="closeSupabaseConfigModal()" style="display: block; margin-top: 8px;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>Task Journal System &bull; Dynamic Team Executors &bull; Standardized Consolidation &bull; BIM Modeling &amp; Engineering</p>
+        </div>
+    </footer>
+
+    <script>
+        function setBimTheme(theme) {
+            document.body.setAttribute('data-bim-theme', theme);
+            try {
+                localStorage.setItem('bim_theme_preference', theme);
+            } catch(e) {}
+            document.querySelectorAll('.bim-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+            });
+            const viewLabel = document.getElementById('bimViewLabel');
+            if (viewLabel) {
+                if (theme === 'blueprint') viewLabel.textContent = 'BLUEPRINT 2D/3D';
+                else if (theme === 'cad-light') viewLabel.textContent = 'DRAFTING VIEW';
+                else viewLabel.textContent = '3D ORTHO VIEW';
+            }
+        }
+
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('bim_theme_preference') || 'revit';
+                setBimTheme(savedTheme);
+            } catch(e) {}
+            const curName = localStorage.getItem('current_executor_name');
+            const curMp = localStorage.getItem('current_executor_mp');
+            if (curName && curMp) {
+                const el = document.getElementById('navExecutorNameText');
+                if (el) el.textContent = `${curName} (${curMp})`;
+            }
+        })();
+
+        // Supabase modal helpers for dashboard
+        window.openSupabaseConfigModal = function() {
+            const modal = document.getElementById('supabaseConfigModal');
+            if (modal) {
+                const urlInput = document.getElementById('modalSupabaseUrl');
+                const keyInput = document.getElementById('modalSupabaseKey');
+                if (urlInput) urlInput.value = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || localStorage.getItem('tj_supabase_url') || '';
+                if (keyInput) keyInput.value = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.anonKey) || localStorage.getItem('tj_supabase_key') || '';
+                modal.style.display = 'flex';
+            }
+        };
+
+        window.closeSupabaseConfigModal = function() {
+            const modal = document.getElementById('supabaseConfigModal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.saveSupabaseConfigModal = function() {
+            const url = (document.getElementById('modalSupabaseUrl').value || '').trim();
+            const key = (document.getElementById('modalSupabaseKey').value || '').trim();
+            TaskJournalDB.saveCredentials(url, key);
+            closeSupabaseConfigModal();
+            alert('Supabase settings saved! Reloading dashboard...');
+            window.location.reload();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Manager Dashboard - 15-Day Task Journal Consolidation{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="dashboard-header card">
+        <div class="dash-title-block">
+            <h2>📊 Manager Consolidation Dashboard</h2>
+            <p class="subtitle">Monitor all 23 team members' progress and export the final uniform report with one click.</p>
+        </div>
+        <div class="dash-actions">
+            <a href="/export-excel?start_date={{ period.start_date }}&end_date={{ period.end_date }}&period_title={{ period.period_title }}&year_label={{ period.year_label }}" 
+               class="btn btn-export">
+                📥 Download Master Excel Report (.xlsx)
+            </a>
+        </div>
+    </div>
+
+    <!-- Period Filter & Stats -->
+    <div class="controls-card card">
+        <form method="GET" action="/dashboard" class="period-filter-form">
+            <div class="form-grid-period">
+                <div class="form-group">
+                    <label><strong>Report Period Label</strong></label>
+                    <input type="text" name="period_title" class="form-control" value="{{ period.period_title }}">
+                </div>
+                <div class="form-group">
+                    <label><strong>Start Date</strong></label>
+                    <input type="date" name="start_date" class="form-control" value="{{ period.start_date }}">
+                </div>
+                <div class="form-group">
+                    <label><strong>End Date</strong></label>
+                    <input type="date" name="end_date" class="form-control" value="{{ period.end_date }}">
+                </div>
+                <div class="form-group">
+                    <label><strong>Year</strong></label>
+                    <input type="text" name="year_label" class="form-control" value="{{ period.year_label }}">
+                </div>
+                <div class="form-group" style="align-self: flex-end;">
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">
+                        🔄 Filter Period
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- KPI Stats Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card card">
+            <div class="kpi-title">Grand Total Team Hours</div>
+            <div class="kpi-value text-primary">{{ summary.grand_total_hours }} <small>hrs</small></div>
+            <div class="kpi-desc">Consolidated across all 23 members</div>
+        </div>
+
+        <div class="kpi-card card">
+            <div class="kpi-title">Members Completed (99 hrs)</div>
+            <div class="kpi-value text-success">
+                {{ summary.completed_members }} <small>/ {{ summary.total_members }}</small>
+            </div>
+            <div class="kpi-desc">
+                {{ ((summary.completed_members / summary.total_members) * 100) | round(1) }}% ready for export
+            </div>
+        </div>
+
+        <div class="kpi-card card">
+            <div class="kpi-title">Expected Target Hours</div>
+            <div class="kpi-value text-secondary">{{ summary.total_members * 99 }} <small>hrs</small></div>
+            <div class="kpi-desc">23 members &times; 99 hrs per 15-day period</div>
+        </div>
+    </div>
+
+    <!-- Member Breakdown Table -->
+    <div class="table-card card">
+        <div class="table-header-row">
+            <h3>👥 Team Members Status ({{ period.period_title }})</h3>
+            <input type="text" id="searchMember" placeholder="🔍 Search member name or MP#..." class="table-search-input">
+        </div>
+        <div class="table-responsive">
+            <table class="dashboard-table" id="memberSummaryTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Team Member</th>
+                        <th style="width: 120px;">MP Number</th>
+                        <th style="width: 160px;">Logged Hours</th>
+                        <th style="width: 140px;">Target Hours</th>
+                        <th style="width: 140px;">Status</th>
+                        <th style="width: 140px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in summary.members %}
+                    <tr class="member-row">
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ m.name }}</strong></td>
+                        <td><span class="badge badge-mp">{{ m.mp_number }}</span></td>
+                        <td>
+                            <strong>{{ m.total_hours }}</strong> hrs
+                            <div class="mini-progress-bg">
+                                <div class="mini-progress-fill {% if m.total_hours >= 99 %}fill-success{% elif m.total_hours > 0 %}fill-warning{% else %}fill-empty{% endif %}" 
+                                     style="width: {{ [((m.total_hours / 99) * 100), 100] | min }}%;"></div>
+                            </div>
+                        </td>
+                        <td>99.0 hrs</td>
+                        <td>
+                            {% if m.status == 'Complete' %}
+                                <span class="badge badge-success">✔ Complete</span>
+                            {% elif m.status == 'In Progress' %}
+                                <span class="badge badge-warning">⏳ In Progress</span>
+                            {% else %}
+                                <span class="badge badge-danger">✖ Not Started</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="/?member_id={{ m.member_id }}&start_date={{ period.start_date }}&end_date={{ period.end_date }}&period_title={{ period.period_title }}" 
+                               class="btn btn-sm btn-outline">
+                                ✏️ Open Sheet
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Live filter search for members
+    document.getElementById('searchMember').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.member-row');
+        rows.forEach(r => {
+            const text = r.innerText.toLowerCase();
+            r.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1107 @@
+:root {
+    --primary: #1F4E78;
+    --primary-hover: #153857;
+    --secondary: #475569;
+    --success: #16A34A;
+    --warning: #EA580C;
+    --danger: #DC2626;
+
+    /* Default BIM 3D Viewport Theme (Autodesk Revit / Navisworks Slate) */
+    --bim-bg: #111722;
+    --bim-grid: 
+        /* Major CAD coordinate grid lines (100px) */
+        linear-gradient(rgba(56, 189, 248, 0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.14) 1px, transparent 1px),
+        /* Minor CAD snap grid lines (20px) */
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        /* Subtle isometric perspective grid diagonals (60deg) */
+        linear-gradient(60deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+        linear-gradient(-60deg, rgba(56, 189, 248, 0.025) 1px, transparent 1px),
+        /* 3D Viewport Horizon depth gradient */
+        radial-gradient(ellipse at 50% 25%, #1d2c42 0%, #0a0f18 100%);
+    --bim-grid-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px, 200px 115.47px, 200px 115.47px, 100% 100%;
+
+    --bg-page: var(--bim-bg);
+    --bg-card: rgba(255, 255, 255, 0.96);
+    --border-color: rgba(226, 232, 240, 0.85);
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --radius: 10px;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+/* Blueprint Theme */
+body[data-bim-theme="blueprint"] {
+    --bim-bg: #0A1E38;
+    --bim-grid: 
+        linear-gradient(rgba(147, 197, 253, 0.22) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(147, 197, 253, 0.22) 1.5px, transparent 1.5px),
+        linear-gradient(rgba(147, 197, 253, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(147, 197, 253, 0.07) 1px, transparent 1px),
+        linear-gradient(60deg, rgba(147, 197, 253, 0.03) 1px, transparent 1px),
+        linear-gradient(-60deg, rgba(147, 197, 253, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at 50% 30%, #10325d 0%, #061324 100%);
+    --bim-grid-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px, 160px 92.38px, 160px 92.38px, 100% 100%;
+}
+
+/* CAD Light Drafting Table Theme */
+body[data-bim-theme="cad-light"] {
+    --bim-bg: #EEF2F6;
+    --bim-grid: 
+        linear-gradient(rgba(31, 78, 120, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, rgba(31, 78, 120, 0.16) 1.5px, transparent 1.5px),
+        linear-gradient(rgba(31, 78, 120, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 78, 120, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 50% 30%, #f8fafc 0%, #e2e8f0 100%);
+    --bim-grid-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px, 100% 100%;
+    --bg-card: #FFFFFF;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bim-bg);
+    background-image: var(--bim-grid);
+    background-size: var(--bim-grid-size);
+    background-attachment: fixed;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Navbar */
+.navbar {
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 2px solid #0284C7;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--primary);
+    font-size: 1.15rem;
+}
+
+.brand-icon {
+    font-size: 1.5rem;
+}
+
+.bim-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0F172A;
+    color: #38BDF8;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #22C55E;
+    box-shadow: 0 0 6px #22C55E;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Viewport theme switcher buttons */
+.bim-viewport-controls {
+    display: inline-flex;
+    align-items: center;
+    background: #F1F5F9;
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    gap: 2px;
+}
+
+.bim-mode-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 0 6px;
+    letter-spacing: 0.5px;
+}
+
+.bim-mode-btn {
+    border: none;
+    background: transparent;
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.bim-mode-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.bim-mode-btn.active {
+    background: #0F172A;
+    color: #38BDF8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.nav-links {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+    background-color: #F8FAFC;
+}
+
+.nav-link.active {
+    color: var(--primary);
+    background-color: #EBF3FA;
+    font-weight: 600;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 24px 20px;
+}
+
+.page-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+/* Headers */
+.portal-header, .dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.portal-header h2, .dashboard-header h2 {
+    font-size: 1.4rem;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Hours Display Card */
+.hours-badge-container {
+    background: #F8FAFC;
+    border: 1px solid var(--border-color);
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    min-width: 220px;
+    text-align: right;
+}
+
+.hours-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.hours-meter {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.hours-target {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 8px;
+    background-color: #E2E8F0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--success);
+    transition: width 0.3s ease;
+}
+
+/* Form Controls */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.form-grid-period {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.5fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.form-control {
+    padding: 9px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background-color: #FFFFFF;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(31, 78, 120, 0.15);
+}
+
+/* Action Toolbar */
+.action-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #FFFFFF;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: #F1F5F9;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: #E2E8F0;
+}
+
+.btn-export {
+    background-color: var(--success);
+    color: #FFFFFF;
+    font-size: 1rem;
+    padding: 12px 24px;
+    box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+}
+
+.btn-export:hover {
+    background-color: #15803D;
+    color: #FFFFFF;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--primary);
+}
+
+.btn-outline:hover {
+    background-color: #EBF3FA;
+}
+
+.btn-delete {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+}
+
+.btn-delete:hover {
+    color: #991B1B;
+}
+
+/* Tables */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.timesheet-table, .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.timesheet-table th, .dashboard-table th {
+    background-color: #F8FAFC;
+    color: var(--text-main);
+    font-weight: 600;
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.timesheet-table td, .dashboard-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+.timesheet-table tbody tr:hover, .dashboard-table tbody tr:hover {
+    background-color: #F8FAFC;
+}
+
+.timesheet-table input, .timesheet-table select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.88rem;
+}
+
+.timesheet-table input:focus, .timesheet-table select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Quick tag buttons */
+.tag-btn-group {
+    display: flex;
+    gap: 4px;
+}
+
+.tag-btn {
+    border: 1px solid var(--border-color);
+    background: #FFFFFF;
+    font-size: 0.75rem;
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+}
+
+.tag-btn:hover {
+    background: #F1F5F9;
+    color: var(--text-main);
+}
+
+.weekend-row {
+    background-color: #F8FAFC !important;
+}
+
+.weekend-row input {
+    background-color: #F1F5F9;
+}
+
+/* Specific leave row highlighting */
+.leave-vacation-row {
+    background-color: #F0FDF4 !important;
+}
+.leave-vacation-row input {
+    background-color: #DCFCE7;
+    border-color: #86EFAC;
+}
+
+.leave-sick-row {
+    background-color: #FEFCE8 !important;
+}
+.leave-sick-row input {
+    background-color: #FEF08A;
+    border-color: #FDE047;
+}
+
+.leave-emergency-row {
+    background-color: #FEF2F2 !important;
+}
+.leave-emergency-row input {
+    background-color: #FEE2E2;
+    border-color: #FCA5A5;
+}
+
+.leave-other-row {
+    background-color: #FAF5FF !important;
+}
+.leave-other-row input {
+    background-color: #F3E8FF;
+    border-color: #D8B4FE;
+}
+
+/* Tag buttons layout & colors */
+.tag-btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.tag-vacation:hover {
+    background-color: #DCFCE7;
+    color: #15803D;
+    border-color: #86EFAC;
+}
+
+.tag-sick:hover {
+    background-color: #FEF08A;
+    color: #854D0E;
+    border-color: #FDE047;
+}
+
+.tag-emergency:hover {
+    background-color: #FEE2E2;
+    color: #B91C1C;
+    border-color: #FCA5A5;
+}
+
+.tag-other:hover {
+    background-color: #F3E8FF;
+    color: #6B21A8;
+    border-color: #D8B4FE;
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.badge-mp {
+    background: #E2E8F0;
+    color: #334155;
+}
+
+.badge-success {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.badge-warning {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-danger {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* KPI Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+}
+
+.kpi-card {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.kpi-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.kpi-value small {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.text-primary { color: var(--primary); }
+.text-success { color: var(--success); }
+.text-secondary { color: var(--secondary); }
+
+.kpi-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Mini Progress Bar in Tables */
+.mini-progress-bg {
+    width: 100%;
+    height: 6px;
+    background-color: #E2E8F0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.mini-progress-fill {
+    height: 100%;
+}
+
+.fill-success { background-color: var(--success); }
+.fill-warning { background-color: var(--warning); }
+.fill-empty { background-color: #CBD5E1; }
+
+.table-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.table-search-input {
+    padding: 7px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.88rem;
+    min-width: 240px;
+}
+
+/* Save status message */
+.save-status-text {
+    font-size: 0.85rem;
+    color: var(--success);
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+/* Bottom Action Bar */
+.bottom-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border-top: 1px solid var(--border-color);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    z-index: 99;
+}
+
+.bottom-info {
+    font-size: 0.95rem;
+}
+
+/* Footer */
+.app-footer {
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    padding: 16px 20px 70px 20px; /* padding-bottom accounts for bottom-action-bar */
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* BIM 3D Coordinate System (UCS Triad) HUD */
+.bim-ucs-triad {
+    position: fixed;
+    bottom: 68px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    padding: 6px 12px 6px 8px;
+    border-radius: 10px;
+    z-index: 90;
+    pointer-events: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s;
+}
+
+.bim-ucs-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.bim-view-type {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #38BDF8;
+}
+
+.bim-view-coord {
+    font-size: 0.65rem;
+    color: #94A3B8;
+    font-family: monospace;
+}
+
+@media (max-width: 992px) {
+    .bim-viewport-controls {
+        display: none;
+    }
+    .bim-ucs-triad {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid-period {
+        grid-template-columns: 1fr;
+    }
+    .portal-header, .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .hours-badge-container {
+        text-align: left;
+    }
+}
+
+/* =========================================================
+   TASK MANAGEMENT JOURNAL - SYSTEM ENTRY MODAL (Image 2)
+   ========================================================= */
+
+.nav-executor-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    border: 1.5px solid #EA580C;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.15);
+}
+
+.nav-executor-badge:hover {
+    background: #FFF7ED;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+}
+
+.executor-avatar {
+    font-size: 1.1rem;
+}
+
+.executor-label-wrap {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.executor-status-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #EA580C;
+    letter-spacing: 0.5px;
+}
+
+#navExecutorNameText {
+    font-size: 0.88rem;
+    color: #0F172A;
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.executor-switch-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #EA580C;
+    background: #FFEDD5;
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+/* Modal Overlay */
+.system-entry-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.system-entry-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 32px 32px 36px 32px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    position: relative;
+    animation: entryModalFadeIn 0.25s ease-out;
+}
+
+@keyframes entryModalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.entry-lang-bar {
+    display: inline-flex;
+    background: #E2E8F0;
+    padding: 4px;
+    border-radius: 10px;
+    gap: 4px;
+    margin-bottom: 22px;
+}
+
+.entry-lang-btn {
+    border: none;
+    background: transparent;
+    padding: 5px 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #475569;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.entry-lang-btn.active {
+    background: #FFFFFF;
+    color: #EA580C;
+    font-weight: 700;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.entry-icon-badge {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #F97316 0%, #C2410C 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    margin: 0 auto 16px auto;
+    box-shadow: 0 8px 16px -4px rgba(234, 88, 12, 0.4);
+}
+
+.entry-title {
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+.entry-subtitle {
+    font-size: 0.92rem;
+    color: #64748B;
+    margin-bottom: 24px;
+}
+
+.entry-form-body {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.entry-label {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.entry-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid #EA580C;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.12);
+    margin-bottom: 16px;
+    transition: all 0.2s;
+}
+
+.entry-user-icon {
+    font-size: 1.15rem;
+    color: #64748B;
+}
+
+.entry-select-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 0.95rem;
+    color: #0F172A;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.entry-new-fields {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.entry-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.entry-field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+.entry-checkbox-group label {
+    font-size: 0.82rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.entry-error-box {
+    background: #FEE2E2;
+    color: #991B1B;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+    border: 1px solid #FCA5A5;
+}
+
+.btn-enter-system {
+    background: linear-gradient(180deg, #D95B06 0%, #A83E00 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(180, 70, 5, 0.35);
+    transition: all 0.2s;
+}
+
+.btn-enter-system:hover {
+    background: linear-gradient(180deg, #EA580C 0%, #9A3412 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(180, 70, 5, 0.45);
+}
+
+.btn-close-overlay {
+    margin-top: 10px;
+    background: transparent;
+    border: none;
+    color: #64748B;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    padding: 6px;
+}
+
+.btn-close-overlay:hover {
+    color: #0F172A;
+    text-decoration: underline;
+}
+
+/* Supabase Cloud Connection Status Pill */
+.supabase-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.supabase-status-pill.disconnected {
+    background: rgba(234, 88, 12, 0.15);
+    border: 1px solid rgba(234, 88, 12, 0.4);
+    color: #FDBA74;
+}
+
+.supabase-status-pill.disconnected:hover {
+    background: rgba(234, 88, 12, 0.25);
+    transform: translateY(-1px);
+}
+
+.supabase-status-pill.disconnected .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #F97316;
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.8);
+}
+
+.supabase-status-pill.connected {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #6EE7B7;
+}
+
+.supabase-status-pill.connected:hover {
+    background: rgba(16, 185, 129, 0.25);
+}
+
+.supabase-status-pill.connected .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+
