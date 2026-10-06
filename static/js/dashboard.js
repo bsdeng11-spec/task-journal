@@ -1,7 +1,14 @@
 /**
  * Manager Consolidation Dashboard Controller
  * Powered by Supabase client & ExcelJS in the browser.
+ * Protected with Manager PIN / Password Gate ('admin123').
  */
+
+const ADMIN_PASSWORD = 'admin123';
+
+function isAdminAuthenticated() {
+    return sessionStorage.getItem('tj_admin_authenticated') === 'true';
+}
 
 document.addEventListener('DOMContentLoaded', async function() {
     const periodTitleInput = document.getElementById('dashPeriodTitle');
@@ -44,8 +51,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (periodTitleInput) periodTitleInput.value = periodTitle;
     if (yearLabelInput) yearLabelInput.value = yearLabel;
 
-    // Load initial dashboard data
-    await renderDashboard();
+    // Check manager authorization gate
+    const overlay = document.getElementById('adminLockOverlay');
+    const lockBtn = document.getElementById('btnLockAdmin');
+
+    if (!isAdminAuthenticated()) {
+        if (overlay) overlay.style.display = 'flex';
+        if (lockBtn) lockBtn.style.display = 'none';
+        const pwInput = document.getElementById('adminPasswordInput');
+        if (pwInput) pwInput.focus();
+        // Do not load confidential team data until manager enters password
+        return;
+    } else {
+        if (overlay) overlay.style.display = 'none';
+        if (lockBtn) lockBtn.style.display = 'inline-flex';
+        await renderDashboard();
+    }
 
     // Event listeners
     if (btnFilter) {
@@ -80,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="7" class="text-center text-muted" style="padding: 30px;">
-                        Loading live team records...
+                        Loading live team records from Supabase...
                     </td>
                 </tr>
             `;
@@ -118,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     tableBody.innerHTML = `
                         <tr>
                             <td colspan="7" class="text-center text-muted" style="padding: 30px;">
-                                No team members found.
+                                No team members found in database.
                             </td>
                         </tr>
                     `;
@@ -173,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="7" class="text-center text-danger" style="padding: 30px;">
-                            Error loading dashboard summary.
+                            Error loading dashboard summary from database.
                         </td>
                     </tr>
                 `;
@@ -218,4 +239,49 @@ document.addEventListener('DOMContentLoaded', async function() {
             btn.disabled = false;
         }
     }
+
+    // Expose renderDashboard for post-login trigger
+    window.renderDashboard = renderDashboard;
 });
+
+// Admin Password Gate Handlers
+window.handleAdminLogin = function(e) {
+    if (e) e.preventDefault();
+    const pwInput = document.getElementById('adminPasswordInput');
+    const errBox = document.getElementById('adminPasswordError');
+    const val = (pwInput ? pwInput.value : '').trim();
+
+    if (val === ADMIN_PASSWORD) {
+        sessionStorage.setItem('tj_admin_authenticated', 'true');
+        const overlay = document.getElementById('adminLockOverlay');
+        if (overlay) overlay.style.display = 'none';
+        const lockBtn = document.getElementById('btnLockAdmin');
+        if (lockBtn) lockBtn.style.display = 'inline-flex';
+        if (errBox) errBox.style.display = 'none';
+        if (typeof window.renderDashboard === 'function') {
+            window.renderDashboard();
+        }
+    } else {
+        if (errBox) {
+            errBox.style.display = 'block';
+            errBox.textContent = '❌ Incorrect password. Access denied.';
+        }
+        if (pwInput) {
+            pwInput.value = '';
+            pwInput.focus();
+        }
+    }
+};
+
+window.lockAdminDashboard = function() {
+    sessionStorage.removeItem('tj_admin_authenticated');
+    const overlay = document.getElementById('adminLockOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    const lockBtn = document.getElementById('btnLockAdmin');
+    if (lockBtn) lockBtn.style.display = 'none';
+    const pwInput = document.getElementById('adminPasswordInput');
+    if (pwInput) {
+        pwInput.value = '';
+        pwInput.focus();
+    }
+};

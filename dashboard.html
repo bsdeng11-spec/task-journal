@@ -57,6 +57,9 @@
                 <div class="nav-links">
                     <a href="index.html" class="nav-link">✍️ Member Timesheet</a>
                     <a href="dashboard.html" class="nav-link active">📊 Manager Dashboard</a>
+                    <button type="button" id="btnLockAdmin" class="btn btn-outline btn-sm" onclick="lockAdminDashboard()" style="padding: 4px 10px; font-size: 0.78rem; border-color: #CBD5E1; color: #CBD5E1; display: none;" title="Lock Dashboard">
+                        🔒 Lock
+                    </button>
                 </div>
             </div>
         </div>
@@ -213,6 +216,36 @@
                     Cancel
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Manager Password Gate Modal -->
+    <div id="adminLockOverlay" class="system-entry-overlay" style="display: flex; z-index: 99999;">
+        <div class="system-entry-card" style="max-width: 440px;">
+            <div class="entry-icon-badge" style="background: #1F4E78; color: #fff;">
+                🔒
+            </div>
+            <h2 class="entry-title">Manager Access Only</h2>
+            <p class="entry-subtitle">Enter manager password to access team consolidation &amp; export reports.</p>
+
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="entry-form-body">
+                <div class="entry-field-group" style="margin-bottom: 14px; text-align: left;">
+                    <label class="entry-field-label" for="adminPasswordInput" style="display: block; margin-bottom: 6px;"><strong>Manager Password</strong></label>
+                    <input type="password" id="adminPasswordInput" class="form-control" placeholder="••••••••" required autofocus style="width: 100%; font-size: 1.15rem; text-align: center; letter-spacing: 2px;">
+                </div>
+
+                <div id="adminPasswordError" class="entry-error-box" style="display: none;">
+                    ❌ Incorrect password. Access denied.
+                </div>
+
+                <button type="submit" class="btn-enter-system" style="background: linear-gradient(180deg, #1F4E78 0%, #153857 100%);">
+                    <span>🔓 Unlock Dashboard</span>
+                </button>
+
+                <a href="index.html" class="btn-close-overlay" style="display: inline-block; margin-top: 12px; text-decoration: none;">
+                    &larr; Return to Member Timesheet
+                </a>
+            </form>
         </div>
     </div>
 
