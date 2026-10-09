@@ -48,15 +48,26 @@ body[data-bim-theme="blueprint"] {
 /* CAD Light Drafting Table Theme */
 body[data-bim-theme="cad-light"] {
     --bim-bg: #EEF2F6;
-    --bim-grid: 
-        linear-gradient(rgba(31, 78, 120, 0.16) 1.5px, transparent 1.5px),
-        linear-gradient(90deg, rgba(31, 78, 120, 0.16) 1.5px, transparent 1.5px),
-        linear-gradient(rgba(31, 78, 120, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(31, 78, 120, 0.06) 1px, transparent 1px),
-        radial-gradient(circle at 50% 30%, #f8fafc 0%, #e2e8f0 100%);
-    --bim-grid-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px, 100% 100%;
+    background-color: #F8FAFC;
+    background-image: 
+        linear-gradient(rgba(241, 245, 249, 0.93), rgba(241, 245, 249, 0.96)),
+        url('../img/bim-office-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     --bg-card: #FFFFFF;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+body[data-bim-theme="revit"] {
+    --bim-bg: #0F172A;
+    background-color: #0F172A;
+    background-image: 
+        linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.93)),
+        url('../img/bim-office-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 * {
@@ -67,9 +78,12 @@ body[data-bim-theme="cad-light"] {
 }
 
 body {
-    background-color: var(--bim-bg);
-    background-image: var(--bim-grid);
-    background-size: var(--bim-grid-size);
+    background-color: #0F172A;
+    background-image: 
+        linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.93)),
+        url('../img/bim-office-bg.jpg');
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
     color: var(--text-main);
     display: flex;
@@ -930,9 +944,11 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: 
+        linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.65)),
+        url('../img/bim-office-bg.jpg') center center / cover no-repeat;
+    backdrop-filter: blur(1.5px);
+    -webkit-backdrop-filter: blur(1.5px);
     z-index: 10000;
     display: flex;
     align-items: center;
