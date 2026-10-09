@@ -139,12 +139,12 @@ body[data-bim-theme="cad-light"]::after {
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: 12px 24px;
+    padding: 12px 28px;
     min-height: 72px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 18px;
     box-sizing: border-box;
 }
 
@@ -285,39 +285,44 @@ body[data-bim-theme="cad-light"]::after {
 .nav-links {
     display: inline-flex;
     align-items: center;
-    height: 38px;
-    background: #F1F5F9;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    padding: 3px;
-    gap: 2px;
-    box-sizing: border-box;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 .nav-link {
-    height: 30px;
+    height: 38px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     text-decoration: none;
-    color: #64748B;
+    color: #475569;
     font-weight: 600;
-    font-size: 0.78rem;
-    padding: 0 12px;
-    border-radius: 6px;
+    font-size: 0.82rem;
+    padding: 0 16px;
+    border-radius: 20px;
+    border: 1px solid #CBD5E1;
+    background: #FFFFFF;
     transition: all 0.2s ease;
     white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .nav-link:hover {
     color: #0F172A;
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: #F8FAFC;
+    border-color: #94A3B8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 .nav-link.active {
-    color: #0284C7;
-    background-color: #FFFFFF;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    color: #FFFFFF;
+    background: #0284C7;
+    border-color: #0284C7;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
     font-weight: 700;
 }
 
