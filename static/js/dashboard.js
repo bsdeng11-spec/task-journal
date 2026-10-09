@@ -10,6 +10,213 @@ function isAdminAuthenticated() {
     return sessionStorage.getItem('tj_admin_authenticated') === 'true';
 }
 
+async function renderDashboard() {
+    const startDateInput = document.getElementById('dashStartDate');
+    const endDateInput = document.getElementById('dashEndDate');
+    const periodTitleInput = document.getElementById('dashPeriodTitle');
+
+    if (!startDateInput || !endDateInput) return;
+
+    const start = startDateInput.value;
+    const end = endDateInput.value;
+    const pTitle = periodTitleInput ? periodTitleInput.value : '';
+
+    const tableBody = document.querySelector('#memberSummaryTable tbody');
+    if (tableBody) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted" style="padding: 30px;">
+                    Loading live team records from Supabase...
+                </td>
+            </tr>
+        `;
+    }
+
+    try {
+        const summary = await TaskJournalDB.getPeriodSummary(start, end);
+
+        // Update KPI cards
+        const elGrandTotal = document.getElementById('kpiGrandTotal');
+        const elCompleted = document.getElementById('kpiCompleted');
+        const elTarget = document.getElementById('kpiTarget');
+        const elCompletionRate = document.getElementById('kpiCompletionRate');
+        const elPeriodHeading = document.getElementById('dashPeriodHeading');
+
+        if (elGrandTotal) elGrandTotal.innerHTML = `${summary.grand_total_hours} <small>hrs</small>`;
+        if (elCompleted) elCompleted.innerHTML = `${summary.completed_members} <small>/ ${summary.total_members}</small>`;
+        if (elTarget) elTarget.innerHTML = `${summary.total_members * 99} <small>hrs</small>`;
+
+        if (elCompletionRate) {
+            const rate = summary.total_members > 0 
+                ? ((summary.completed_members / summary.total_members) * 100).toFixed(1) 
+                : 0;
+            elCompletionRate.textContent = `${rate}% ready for export`;
+        }
+
+        if (elPeriodHeading) {
+            elPeriodHeading.textContent = `👥 Team Members Status (${pTitle})`;
+        }
+
+        // Render table
+        if (tableBody) {
+            tableBody.innerHTML = '';
+            if (!summary.members || summary.members.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted" style="padding: 30px;">
+                            No team members found in database.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            summary.members.forEach((m, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = 'member-row';
+
+                let badgeClass = 'badge-danger';
+                let badgeText = '✖ Not Started';
+                let fillClass = 'fill-empty';
+
+                if (m.status === 'Complete') {
+                    badgeClass = 'badge-success';
+                    badgeText = '✔ Complete';
+                    fillClass = 'fill-success';
+                } else if (m.status === 'In Progress') {
+                    badgeClass = 'badge-warning';
+                    badgeText = '⏳ In Progress';
+                    fillClass = 'fill-warning';
+                }
+
+                const progressPct = Math.min(((m.total_hours / 99.0) * 100), 100);
+
+                tr.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td><strong>${m.name}</strong></td>
+                    <td><span class="badge badge-mp">${m.mp_number}</span></td>
+                    <td>
+                        <strong>${m.total_hours}</strong> hrs
+                        <div class="mini-progress-bg">
+                            <div class="mini-progress-fill ${fillClass}" style="width: ${progressPct}%;"></div>
+                        </div>
+                    </td>
+                    <td>99.0 hrs</td>
+                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+                    <td>
+                        <a href="index.html?member_id=${m.member_id}&start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&period_title=${encodeURIComponent(pTitle)}" 
+                           class="btn btn-sm btn-outline">
+                            ✏️ Open Sheet
+                        </a>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    } catch (err) {
+        console.error('Failed to load dashboard:', err);
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger" style="padding: 30px;">
+                        Error loading dashboard summary from database.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+}
+
+async function handleExcelExport() {
+    const btn = document.getElementById('btnExportExcel');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.innerHTML = '⏳ Generating Master Excel...';
+        btn.disabled = true;
+    }
+
+    try {
+        const startDateInput = document.getElementById('dashStartDate');
+        const endDateInput = document.getElementById('dashEndDate');
+        const periodTitleInput = document.getElementById('dashPeriodTitle');
+        const yearLabelInput = document.getElementById('dashYearLabel');
+
+        const start = startDateInput.value;
+        const end = endDateInput.value;
+        const pTitle = periodTitleInput ? periodTitleInput.value : "Period";
+        const yr = yearLabelInput ? yearLabelInput.value : String(new Date().getFullYear());
+
+        const members = await TaskJournalDB.getMembers();
+        const allTasks = await TaskJournalDB.getAllTasksForPeriod(start, end);
+
+        // Group tasks by member_id
+        const tasksByMember = {};
+        allTasks.forEach(t => {
+            const mId = t.member_id;
+            if (!tasksByMember[mId]) tasksByMember[mId] = [];
+            tasksByMember[mId].push(t);
+        });
+
+        await TaskJournalExporter.downloadMasterReport({
+            periodTitle: pTitle,
+            yearLabel: yr,
+            members: members,
+            tasksByMember: tasksByMember
+        });
+    } catch (e) {
+        console.error('Export failed:', e);
+        alert('Failed to export Excel report. Please check the console for details.');
+    } finally {
+        if (btn) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+}
+
+// Global functions for buttons & forms
+window.renderDashboard = renderDashboard;
+window.handleExcelExport = handleExcelExport;
+
+window.handleAdminLogin = function(e) {
+    if (e) e.preventDefault();
+    const pwInput = document.getElementById('adminPasswordInput');
+    const errBox = document.getElementById('adminPasswordError');
+    const val = (pwInput ? pwInput.value : '').trim();
+
+    if (val === ADMIN_PASSWORD) {
+        sessionStorage.setItem('tj_admin_authenticated', 'true');
+        const overlay = document.getElementById('adminLockOverlay');
+        if (overlay) overlay.style.display = 'none';
+        const lockBtn = document.getElementById('btnLockAdmin');
+        if (lockBtn) lockBtn.style.display = 'inline-flex';
+        if (errBox) errBox.style.display = 'none';
+        renderDashboard();
+    } else {
+        if (errBox) {
+            errBox.style.display = 'block';
+            errBox.textContent = '❌ Incorrect password. Access denied.';
+        }
+        if (pwInput) {
+            pwInput.value = '';
+            pwInput.focus();
+        }
+    }
+};
+
+window.lockAdminDashboard = function() {
+    sessionStorage.removeItem('tj_admin_authenticated');
+    const overlay = document.getElementById('adminLockOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    const lockBtn = document.getElementById('btnLockAdmin');
+    if (lockBtn) lockBtn.style.display = 'none';
+    const pwInput = document.getElementById('adminPasswordInput');
+    if (pwInput) {
+        pwInput.value = '';
+        pwInput.focus();
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async function() {
     const periodTitleInput = document.getElementById('dashPeriodTitle');
     const startDateInput = document.getElementById('dashStartDate');
@@ -51,24 +258,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (periodTitleInput) periodTitleInput.value = periodTitle;
     if (yearLabelInput) yearLabelInput.value = yearLabel;
 
-    // Check manager authorization gate
-    const overlay = document.getElementById('adminLockOverlay');
-    const lockBtn = document.getElementById('btnLockAdmin');
-
-    if (!isAdminAuthenticated()) {
-        if (overlay) overlay.style.display = 'flex';
-        if (lockBtn) lockBtn.style.display = 'none';
-        const pwInput = document.getElementById('adminPasswordInput');
-        if (pwInput) pwInput.focus();
-        // Do not load confidential team data until manager enters password
-        return;
-    } else {
-        if (overlay) overlay.style.display = 'none';
-        if (lockBtn) lockBtn.style.display = 'inline-flex';
-        await renderDashboard();
-    }
-
-    // Event listeners
+    // Attach event listeners regardless of auth state
     if (btnFilter) {
         btnFilter.addEventListener('click', function(e) {
             e.preventDefault();
@@ -91,197 +281,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    async function renderDashboard() {
-        const start = startDateInput.value;
-        const end = endDateInput.value;
-        const pTitle = periodTitleInput.value;
-
-        const tableBody = document.querySelector('#memberSummaryTable tbody');
-        if (tableBody) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="text-center text-muted" style="padding: 30px;">
-                        Loading live team records from Supabase...
-                    </td>
-                </tr>
-            `;
-        }
-
-        try {
-            const summary = await TaskJournalDB.getPeriodSummary(start, end);
-
-            // Update KPI cards
-            const elGrandTotal = document.getElementById('kpiGrandTotal');
-            const elCompleted = document.getElementById('kpiCompleted');
-            const elTarget = document.getElementById('kpiTarget');
-            const elCompletionRate = document.getElementById('kpiCompletionRate');
-            const elPeriodHeading = document.getElementById('dashPeriodHeading');
-
-            if (elGrandTotal) elGrandTotal.innerHTML = `${summary.grand_total_hours} <small>hrs</small>`;
-            if (elCompleted) elCompleted.innerHTML = `${summary.completed_members} <small>/ ${summary.total_members}</small>`;
-            if (elTarget) elTarget.innerHTML = `${summary.total_members * 99} <small>hrs</small>`;
-
-            if (elCompletionRate) {
-                const rate = summary.total_members > 0 
-                    ? ((summary.completed_members / summary.total_members) * 100).toFixed(1) 
-                    : 0;
-                elCompletionRate.textContent = `${rate}% ready for export`;
-            }
-
-            if (elPeriodHeading) {
-                elPeriodHeading.textContent = `👥 Team Members Status (${pTitle})`;
-            }
-
-            // Render table
-            if (tableBody) {
-                tableBody.innerHTML = '';
-                if (!summary.members || summary.members.length === 0) {
-                    tableBody.innerHTML = `
-                        <tr>
-                            <td colspan="7" class="text-center text-muted" style="padding: 30px;">
-                                No team members found in database.
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                summary.members.forEach((m, idx) => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'member-row';
-
-                    let badgeClass = 'badge-danger';
-                    let badgeText = '✖ Not Started';
-                    let fillClass = 'fill-empty';
-
-                    if (m.status === 'Complete') {
-                        badgeClass = 'badge-success';
-                        badgeText = '✔ Complete';
-                        fillClass = 'fill-success';
-                    } else if (m.status === 'In Progress') {
-                        badgeClass = 'badge-warning';
-                        badgeText = '⏳ In Progress';
-                        fillClass = 'fill-warning';
-                    }
-
-                    const progressPct = Math.min(((m.total_hours / 99.0) * 100), 100);
-
-                    tr.innerHTML = `
-                        <td>${idx + 1}</td>
-                        <td><strong>${m.name}</strong></td>
-                        <td><span class="badge badge-mp">${m.mp_number}</span></td>
-                        <td>
-                            <strong>${m.total_hours}</strong> hrs
-                            <div class="mini-progress-bg">
-                                <div class="mini-progress-fill ${fillClass}" style="width: ${progressPct}%;"></div>
-                            </div>
-                        </td>
-                        <td>99.0 hrs</td>
-                        <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                        <td>
-                            <a href="index.html?member_id=${m.member_id}&start_date=${encodeURIComponent(start)}&end_date=${encodeURIComponent(end)}&period_title=${encodeURIComponent(pTitle)}" 
-                               class="btn btn-sm btn-outline">
-                                ✏️ Open Sheet
-                            </a>
-                        </td>
-                    `;
-                    tableBody.appendChild(tr);
-                });
-            }
-        } catch (err) {
-            console.error('Failed to load dashboard:', err);
-            if (tableBody) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="7" class="text-center text-danger" style="padding: 30px;">
-                            Error loading dashboard summary from database.
-                        </td>
-                    </tr>
-                `;
-            }
-        }
-    }
-
-    async function handleExcelExport() {
-        const btn = btnExportExcel;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '⏳ Generating Master Excel...';
-        btn.disabled = true;
-
-        try {
-            const start = startDateInput.value;
-            const end = endDateInput.value;
-            const pTitle = periodTitleInput.value || "Period";
-            const yr = yearLabelInput.value || String(curYear);
-
-            const members = await TaskJournalDB.getMembers();
-            const allTasks = await TaskJournalDB.getAllTasksForPeriod(start, end);
-
-            // Group tasks by member_id
-            const tasksByMember = {};
-            allTasks.forEach(t => {
-                const mId = t.member_id;
-                if (!tasksByMember[mId]) tasksByMember[mId] = [];
-                tasksByMember[mId].push(t);
-            });
-
-            await TaskJournalExporter.downloadMasterReport({
-                periodTitle: pTitle,
-                yearLabel: yr,
-                members: members,
-                tasksByMember: tasksByMember
-            });
-        } catch (e) {
-            console.error('Export failed:', e);
-            alert('Failed to export Excel report. Please check the console for details.');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-    }
-
-    // Expose renderDashboard for post-login trigger
-    window.renderDashboard = renderDashboard;
-});
-
-// Admin Password Gate Handlers
-window.handleAdminLogin = function(e) {
-    if (e) e.preventDefault();
-    const pwInput = document.getElementById('adminPasswordInput');
-    const errBox = document.getElementById('adminPasswordError');
-    const val = (pwInput ? pwInput.value : '').trim();
-
-    if (val === ADMIN_PASSWORD) {
-        sessionStorage.setItem('tj_admin_authenticated', 'true');
-        const overlay = document.getElementById('adminLockOverlay');
-        if (overlay) overlay.style.display = 'none';
-        const lockBtn = document.getElementById('btnLockAdmin');
-        if (lockBtn) lockBtn.style.display = 'inline-flex';
-        if (errBox) errBox.style.display = 'none';
-        if (typeof window.renderDashboard === 'function') {
-            window.renderDashboard();
-        }
-    } else {
-        if (errBox) {
-            errBox.style.display = 'block';
-            errBox.textContent = '❌ Incorrect password. Access denied.';
-        }
-        if (pwInput) {
-            pwInput.value = '';
-            pwInput.focus();
-        }
-    }
-};
-
-window.lockAdminDashboard = function() {
-    sessionStorage.removeItem('tj_admin_authenticated');
+    // Authorization gate check
     const overlay = document.getElementById('adminLockOverlay');
-    if (overlay) overlay.style.display = 'flex';
     const lockBtn = document.getElementById('btnLockAdmin');
-    if (lockBtn) lockBtn.style.display = 'none';
-    const pwInput = document.getElementById('adminPasswordInput');
-    if (pwInput) {
-        pwInput.value = '';
-        pwInput.focus();
+
+    if (!isAdminAuthenticated()) {
+        if (overlay) overlay.style.display = 'flex';
+        if (lockBtn) lockBtn.style.display = 'none';
+        const pwInput = document.getElementById('adminPasswordInput');
+        if (pwInput) pwInput.focus();
+    } else {
+        if (overlay) overlay.style.display = 'none';
+        if (lockBtn) lockBtn.style.display = 'inline-flex';
+        await renderDashboard();
     }
-};
+});
