@@ -36,8 +36,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Default period setup if inputs are empty
     setDefaultPeriodDates(paramStartDate, paramEndDate, paramPeriodTitle);
 
-    // Initialize Supabase DB client and load members
-    await loadMembers();
+    // Instant local cache population (0ms - opens immediately with zero network delay)
+    allMembersCache = TaskJournalDB.getLocalMembers();
+    populateMemberDropdowns(allMembersCache);
 
     let activeMemberId = paramMemberId || localStorage.getItem('current_executor_id');
     let activeMember = allMembersCache.find(m => String(m.id) === String(activeMemberId));
@@ -47,12 +48,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (memberSelect) {
             memberSelect.value = activeMember.id;
             updateMemberInfo();
-            await loadMemberTasks(true); // auto-prefill if empty
         }
+        loadMemberTasks(true);
     } else {
-        // No executor chosen yet -> show Entry Modal
+        // No executor chosen yet -> show Entry Modal immediately
         window.openEnterSystemModal(false);
     }
+
+    // Refresh cloud members in background
+    loadMembers().then(() => {
+        const fresh = allMembersCache.find(m => String(m.id) === String(activeMemberId));
+        if (fresh) {
+            setSystemExecutor(fresh);
+            if (memberSelect) memberSelect.value = fresh.id;
+        }
+    });
 
     if (memberSelect) {
         memberSelect.addEventListener('change', async function() {

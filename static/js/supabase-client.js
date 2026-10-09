@@ -101,20 +101,31 @@ const TaskJournalDB = (function() {
 
     // Public API Methods
 
+    function withTimeout(promise, ms = 3500) {
+        let timer;
+        const timeoutPromise = new Promise((_, reject) => {
+            timer = setTimeout(() => reject(new Error('Network request timed out')), ms);
+        });
+        return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+    }
+
     async function getMembers() {
         if (client) {
             try {
-                const { data, error } = await client
+                const query = client
                     .from('members')
                     .select('*')
                     .eq('active', 1)
                     .order('id', { ascending: true });
 
+                const { data, error } = await withTimeout(query, 3500);
+
                 if (!error && data && data.length > 0) {
+                    saveLocalMembers(data);
                     return data;
                 }
             } catch (e) {
-                console.warn('Supabase getMembers error, falling back to local cache', e);
+                console.warn('Supabase getMembers error/timeout, falling back to local cache', e);
             }
         }
         return getLocalMembers();
@@ -214,7 +225,7 @@ const TaskJournalDB = (function() {
     async function getTasksForMember(memberId, startDate, endDate) {
         if (client) {
             try {
-                const { data, error } = await client
+                const query = client
                     .from('tasks')
                     .select('*')
                     .eq('member_id', memberId)
@@ -222,9 +233,11 @@ const TaskJournalDB = (function() {
                     .lte('date', endDate)
                     .order('date', { ascending: true });
 
+                const { data, error } = await withTimeout(query, 3500);
+
                 if (!error) return data || [];
             } catch (e) {
-                console.warn('Supabase getTasks error, fallback to local', e);
+                console.warn('Supabase getTasks error/timeout, fallback to local', e);
             }
         }
 
@@ -374,6 +387,7 @@ const TaskJournalDB = (function() {
         init,
         isConfigured: () => isConnected,
         getMembers,
+        getLocalMembers,
         addOrGetMember,
         updateMemberName,
         getTasksForMember,
