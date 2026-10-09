@@ -48,26 +48,14 @@ body[data-bim-theme="blueprint"] {
 /* CAD Light Drafting Table Theme */
 body[data-bim-theme="cad-light"] {
     --bim-bg: #EEF2F6;
-    background-color: #F8FAFC;
-    background-image: 
-        linear-gradient(rgba(241, 245, 249, 0.50), rgba(241, 245, 249, 0.65)),
-        url('../img/bim-office-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-color: #F1F5F9;
     --bg-card: #FFFFFF;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
 body[data-bim-theme="revit"] {
-    --bim-bg: #0F172A;
-    background-color: #0F172A;
-    background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.50), rgba(15, 23, 42, 0.65)),
-        url('../img/bim-office-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    --bim-bg: #0B111E;
+    background-color: #0B111E;
 }
 
 * {
@@ -78,29 +66,68 @@ body[data-bim-theme="revit"] {
 }
 
 body {
-    background-color: #0F172A;
-    background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.50), rgba(15, 23, 42, 0.65)),
-        url('../img/bim-office-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-color: #0B111E;
     color: var(--text-main);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
 }
 
-/* Navbar */
+/* Smooth Atmospheric Architectural Office Backdrop */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('../img/bim-office-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(8px) brightness(0.85);
+    transform: scale(1.06);
+    z-index: -2;
+    transition: filter 0.3s ease;
+}
+
+/* Ambient Smooth Lighting Gradient Overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(ellipse at 50% 20%, rgba(15, 23, 42, 0.4) 0%, rgba(11, 17, 30, 0.8) 100%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.35) 25%, rgba(11, 17, 30, 0.75) 100%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+body[data-bim-theme="cad-light"]::before {
+    filter: blur(8px) brightness(1.15) opacity(0.5);
+}
+
+body[data-bim-theme="cad-light"]::after {
+    background: 
+        radial-gradient(ellipse at 50% 20%, rgba(241, 245, 249, 0.5) 0%, rgba(226, 232, 240, 0.85) 100%),
+        linear-gradient(180deg, rgba(248, 250, 252, 0.75) 0%, rgba(241, 245, 249, 0.4) 25%, rgba(226, 232, 240, 0.8) 100%);
+}
+
+/* Navbar - Smooth seamless blending */
 .navbar {
-    background-color: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 2px solid #0284C7;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
 }
 
 .nav-container {
@@ -945,8 +972,10 @@ body {
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0.32)),
+        linear-gradient(rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.45)),
         url('../img/bim-office-bg.jpg') center center / cover no-repeat;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     z-index: 10000;
     display: flex;
     align-items: center;
