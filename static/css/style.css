@@ -50,7 +50,7 @@ body[data-bim-theme="cad-light"] {
     --bim-bg: #EEF2F6;
     background-color: #F8FAFC;
     background-image: 
-        linear-gradient(rgba(241, 245, 249, 0.93), rgba(241, 245, 249, 0.96)),
+        linear-gradient(rgba(241, 245, 249, 0.50), rgba(241, 245, 249, 0.65)),
         url('../img/bim-office-bg.jpg');
     background-size: cover;
     background-position: center;
@@ -63,7 +63,7 @@ body[data-bim-theme="revit"] {
     --bim-bg: #0F172A;
     background-color: #0F172A;
     background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.93)),
+        linear-gradient(rgba(15, 23, 42, 0.50), rgba(15, 23, 42, 0.65)),
         url('../img/bim-office-bg.jpg');
     background-size: cover;
     background-position: center;
@@ -80,7 +80,7 @@ body[data-bim-theme="revit"] {
 body {
     background-color: #0F172A;
     background-image: 
-        linear-gradient(rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.93)),
+        linear-gradient(rgba(15, 23, 42, 0.50), rgba(15, 23, 42, 0.65)),
         url('../img/bim-office-bg.jpg');
     background-size: cover;
     background-position: center;
@@ -945,10 +945,8 @@ body {
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.65)),
+        linear-gradient(rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0.32)),
         url('../img/bim-office-bg.jpg') center center / cover no-repeat;
-    backdrop-filter: blur(1.5px);
-    -webkit-backdrop-filter: blur(1.5px);
     z-index: 10000;
     display: flex;
     align-items: center;
