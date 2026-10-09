@@ -42,12 +42,16 @@
                     <span class="executor-switch-tag">Switch ▾</span>
                 </div>
 
-                <!-- BIM Viewport Background switcher -->
-                <div class="bim-viewport-controls" title="Change BIM Viewport Background">
-                    <span class="bim-mode-label">VIEWPORT:</span>
-                    <button type="button" class="bim-mode-btn active" data-theme="revit" onclick="setBimTheme('revit')">📐 Revit 3D</button>
-                    <button type="button" class="bim-mode-btn" data-theme="blueprint" onclick="setBimTheme('blueprint')">🟦 Blueprint</button>
-                    <button type="button" class="bim-mode-btn" data-theme="cad-light" onclick="setBimTheme('cad-light')">📋 CAD Light</button>
+                <!-- Sleek Theme Toggle -->
+                <div class="theme-toggle-wrap" title="Toggle Dark / Light Mode">
+                    <button type="button" class="theme-toggle-btn active" id="btnThemeDark" onclick="setAppTheme('dark')">
+                        <span class="theme-icon">🌙</span>
+                        <span>Dark</span>
+                    </button>
+                    <button type="button" class="theme-toggle-btn" id="btnThemeLight" onclick="setAppTheme('light')">
+                        <span class="theme-icon">☀️</span>
+                        <span>Light</span>
+                    </button>
                 </div>
                 
                 <div class="nav-links">
@@ -179,25 +183,6 @@
         </datalist>
     </main>
 
-    <!-- BIM 3D Coordinate Axis Triad (UCS HUD) -->
-    <div class="bim-ucs-triad" id="bimUcsWidget" aria-hidden="true" title="BIM World Coordinate System">
-        <svg width="48" height="48" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="30" y1="30" x2="30" y2="8" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
-            <polygon points="30,3 26,11 34,11" fill="#38BDF8"/>
-            <text x="34" y="13" fill="#38BDF8" font-size="10" font-family="'Inter', monospace" font-weight="700">Z</text>
-            <line x1="30" y1="30" x2="52" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
-            <polygon points="56,42 48,36 50,44" fill="#EF4444"/>
-            <text x="53" y="34" fill="#EF4444" font-size="10" font-family="'Inter', monospace" font-weight="700">X</text>
-            <line x1="30" y1="30" x2="11" y2="43" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
-            <polygon points="7,45 11,37 16,44" fill="#22C55E"/>
-            <text x="5" y="38" fill="#22C55E" font-size="10" font-family="'Inter', monospace" font-weight="700">Y</text>
-            <circle cx="30" cy="30" r="3.5" fill="#FFFFFF"/>
-        </svg>
-        <div class="bim-ucs-info">
-            <span class="bim-view-type" id="bimViewLabel">3D ORTHO</span>
-            <span class="bim-view-coord">GRID 1.0 &bull; WCS</span>
-        </div>
-    </div>
 
     <!-- Task Management Journal Login / Entry Modal (Image 2) -->
     <div id="enterSystemOverlay" class="system-entry-overlay" style="display: none;">
@@ -333,26 +318,22 @@
             if (defOpt) defOpt.textContent = t.placeholder;
         }
 
-        function setBimTheme(theme) {
-            document.body.setAttribute('data-bim-theme', theme);
+        function setAppTheme(theme) {
+            const bimTheme = (theme === 'light') ? 'cad-light' : 'revit';
+            document.body.setAttribute('data-bim-theme', bimTheme);
             try {
-                localStorage.setItem('bim_theme_preference', theme);
+                localStorage.setItem('app_theme_preference', theme);
             } catch(e) {}
-            document.querySelectorAll('.bim-mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
-            });
-            const viewLabel = document.getElementById('bimViewLabel');
-            if (viewLabel) {
-                if (theme === 'blueprint') viewLabel.textContent = 'BLUEPRINT 2D/3D';
-                else if (theme === 'cad-light') viewLabel.textContent = 'DRAFTING VIEW';
-                else viewLabel.textContent = '3D ORTHO VIEW';
-            }
+            const darkBtn = document.getElementById('btnThemeDark');
+            const lightBtn = document.getElementById('btnThemeLight');
+            if (darkBtn) darkBtn.classList.toggle('active', theme === 'dark');
+            if (lightBtn) lightBtn.classList.toggle('active', theme === 'light');
         }
 
         (function() {
             try {
-                const savedTheme = localStorage.getItem('bim_theme_preference') || 'revit';
-                setBimTheme(savedTheme);
+                const savedTheme = localStorage.getItem('app_theme_preference') || 'dark';
+                setAppTheme(savedTheme);
             } catch(e) {}
         })();
     </script>
