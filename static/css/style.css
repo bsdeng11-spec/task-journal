@@ -79,30 +79,32 @@ body {
 
 /* Navbar */
 .navbar {
-    background-color: rgba(255, 255, 255, 0.94);
+    background-color: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 2px solid #0284C7;
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .nav-container {
-    max-width: 1300px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 14px;
 }
 
 .brand-group {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-shrink: 0;
 }
 
 .brand-logo {
@@ -110,59 +112,92 @@ body {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    color: var(--primary);
-    font-size: 1.15rem;
+    line-height: 1;
 }
 
 .brand-icon {
-    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #E0F2FE;
+    border: 1px solid #BAE6FD;
+    border-radius: 8px;
+    font-size: 1.25rem;
+    box-shadow: 0 1px 2px rgba(2, 132, 199, 0.08);
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.15;
+}
+
+.brand-text strong,
+.brand-text .brand-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    color: #0F172A;
+    white-space: nowrap;
+}
+
+.brand-text small,
+.brand-text .brand-subtitle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #0284C7;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    text-transform: uppercase;
 }
 
 .bim-status-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #0F172A;
-    color: #38BDF8;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.72rem;
+    background: #F0F9FF;
+    color: #0369A1;
+    padding: 0 10px;
+    height: 28px;
+    border-radius: 6px;
+    font-size: 0.74rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    border: 1px solid #BAE6FD;
+    white-space: nowrap;
 }
 
 .status-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
-    background-color: #22C55E;
-    box-shadow: 0 0 6px #22C55E;
+    background-color: #10B981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+    flex-shrink: 0;
 }
 
 .nav-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
-/* Viewport theme switcher buttons */
 /* Sleek Modern Theme Switcher */
 .theme-toggle-wrap {
     display: inline-flex;
     align-items: center;
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9999px;
+    height: 38px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
     padding: 3px;
-    gap: 3px;
-    backdrop-filter: blur(10px);
-    transition: all 0.25s ease;
-}
-
-body[data-bim-theme="cad-light"] .theme-toggle-wrap {
-    background: #E2E8F0;
-    border-color: #CBD5E1;
+    gap: 2px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
 .theme-toggle-btn {
@@ -170,66 +205,109 @@ body[data-bim-theme="cad-light"] .theme-toggle-wrap {
     background: transparent;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    font-size: 0.78rem;
+    gap: 5px;
+    height: 30px;
+    padding: 0 10px;
+    font-size: 0.76rem;
     font-weight: 600;
-    color: #94A3B8;
-    border-radius: 9999px;
+    color: #64748B;
+    border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     user-select: none;
+    white-space: nowrap;
 }
 
 .theme-toggle-btn:hover {
-    color: #F8FAFC;
-}
-
-body[data-bim-theme="cad-light"] .theme-toggle-btn:hover {
     color: #0F172A;
 }
 
 .theme-toggle-btn.active {
-    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
-    color: #38BDF8;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(56, 189, 248, 0.25);
-}
-
-body[data-bim-theme="cad-light"] .theme-toggle-btn.active {
     background: #FFFFFF;
     color: #0284C7;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-weight: 700;
 }
 
 .theme-toggle-btn .theme-icon {
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     line-height: 1;
 }
 
 .nav-links {
-    display: flex;
-    gap: 12px;
+    display: inline-flex;
+    align-items: center;
+    height: 38px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    box-sizing: border-box;
 }
 
 .nav-link {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     text-decoration: none;
-    color: var(--text-muted);
-    font-weight: 500;
-    font-size: 0.95rem;
-    padding: 8px 16px;
-    border-radius: var(--radius);
-    transition: all 0.2s;
+    color: #64748B;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 0 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
-    color: var(--primary);
-    background-color: #F8FAFC;
+    color: #0F172A;
+    background-color: rgba(255, 255, 255, 0.6);
 }
 
 .nav-link.active {
-    color: var(--primary);
-    background-color: #EBF3FA;
+    color: #0284C7;
+    background-color: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-weight: 700;
+}
+
+#btnLockAdmin {
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 10px;
+    font-size: 0.76rem;
     font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid #CBD5E1;
+    background: transparent;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 2px;
+}
+
+#btnLockAdmin:hover {
+    background: #FEE2E2;
+    border-color: #FCA5A5;
+    color: #DC2626;
+}
+
+@media (max-width: 1280px) {
+    .nav-container {
+        padding: 0 14px;
+        gap: 8px;
+    }
+    .nav-right {
+        gap: 6px;
+    }
+    .nav-link {
+        padding: 0 8px;
+        font-size: 0.74rem;
+    }
 }
 
 /* Main Content */
@@ -784,54 +862,65 @@ body[data-bim-theme="cad-light"] .theme-toggle-btn.active {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: #FFFFFF;
-    border: 1.5px solid #EA580C;
-    padding: 5px 14px;
-    border-radius: 20px;
+    height: 38px;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    padding: 0 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.15);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .nav-executor-badge:hover {
-    background: #FFF7ED;
+    background: #F1F5F9;
+    border-color: #CBD5E1;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .executor-avatar {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
 }
 
 .executor-label-wrap {
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    justify-content: center;
+    line-height: 1.15;
 }
 
 .executor-status-label {
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: 0.58rem;
+    font-weight: 800;
     color: #EA580C;
     letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 #navExecutorNameText {
-    font-size: 0.88rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: #0F172A;
-    max-width: 140px;
+    max-width: 130px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .executor-switch-tag {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: #EA580C;
-    background: #FFEDD5;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #0284C7;
+    background: #E0F2FE;
     padding: 2px 6px;
-    border-radius: 6px;
+    border-radius: 4px;
+    letter-spacing: 0.2px;
 }
 
 /* Modal Overlay */
@@ -1061,50 +1150,58 @@ body[data-bim-theme="cad-light"] .theme-toggle-btn.active {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    padding: 6px 14px;
-    border-radius: 9999px;
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 8px;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .supabase-status-pill.disconnected {
-    background: rgba(234, 88, 12, 0.15);
-    border: 1px solid rgba(234, 88, 12, 0.4);
-    color: #FDBA74;
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    color: #C2410C;
 }
 
 .supabase-status-pill.disconnected:hover {
-    background: rgba(234, 88, 12, 0.25);
+    background: #FFEDD5;
+    border-color: #FDBA74;
     transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(234, 88, 12, 0.15);
 }
 
 .supabase-status-pill.disconnected .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #F97316;
-    box-shadow: 0 0 8px rgba(249, 115, 22, 0.8);
+    box-shadow: 0 0 6px rgba(249, 115, 22, 0.7);
 }
 
 .supabase-status-pill.connected {
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #6EE7B7;
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    color: #047857;
 }
 
 .supabase-status-pill.connected:hover {
-    background: rgba(16, 185, 129, 0.25);
+    background: #D1FAE5;
+    border-color: #6EE7B7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(16, 185, 129, 0.15);
 }
 
 .supabase-status-pill.connected .status-dot {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: #10B981;
-    box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
 }
 
 
