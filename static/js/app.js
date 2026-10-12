@@ -177,10 +177,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (tableBody) tableBody.innerHTML = '';
 
             if (tasks && tasks.length > 0) {
+                // Enforce FIFO order: Earliest date first, then earliest created task first
+                tasks.sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
                 tasks.forEach(task => addRow(task));
                 if (saveStatus) saveStatus.textContent = `Loaded ${tasks.length} task entries.`;
             } else if (autoPrefillIfEmpty) {
-                // Auto-fill period on first visit
+                // Auto-fill period on first visit (Day 1 to 15 in FIFO order)
                 generatePeriodDays(false);
                 if (saveStatus) saveStatus.textContent = 'Auto-filled 15-day period layout.';
             } else {
@@ -463,6 +465,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         });
 
+        // Enforce FIFO chronological sorting before saving
+        tasks.sort((a, b) => a.date.localeCompare(b.date));
+
         if (saveStatus) {
             saveStatus.textContent = 'Saving to database...';
             saveStatus.style.color = '#1F4E78';
@@ -506,13 +511,14 @@ async function loadMembers() {
 }
 
 function populateMemberDropdowns(members) {
+    const sortedMembers = [...(members || [])].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)); // FIFO
     const modalSelect = document.getElementById('modalMemberSelect');
     const pageSelect = document.getElementById('memberSelect');
 
     if (modalSelect) {
         modalSelect.innerHTML = `
             <option value="" disabled selected>Select name...</option>
-            ${members.map(m => `<option value="${m.id}" data-name="${m.name}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
+            ${sortedMembers.map(m => `<option value="${m.id}" data-name="${m.name}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
             <option disabled>──────────────</option>
             <option value="__NEW__">➕ Add New Executor...</option>
             <option value="__RENAME__">✏️ Rename / Change Name for Member...</option>
@@ -523,7 +529,7 @@ function populateMemberDropdowns(members) {
         const currentVal = pageSelect.value;
         pageSelect.innerHTML = `
             <option value="">-- Choose Your Name --</option>
-            ${members.map(m => `<option value="${m.id}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
+            ${sortedMembers.map(m => `<option value="${m.id}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
         `;
         if (currentVal) pageSelect.value = currentVal;
     }

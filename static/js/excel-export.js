@@ -97,11 +97,17 @@ const TaskJournalExporter = (function() {
 
         let grandTotalHours = 0.0;
 
-        // Data rows grouped by Executor
-        members.forEach(member => {
+        // Ensure members are in strict FIFO registration order (Member #1 to #23)
+        const sortedMembers = [...members].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+
+        // Data rows grouped by Executor (FIFO)
+        sortedMembers.forEach(member => {
             const mId = member.id;
-            const mTasks = tasksByMember[mId] || [];
-            if (!mTasks || mTasks.length === 0) return;
+            const rawTasks = tasksByMember[mId] || [];
+            if (!rawTasks || rawTasks.length === 0) return;
+
+            // Enforce FIFO chronological sorting on tasks (date ASC, id ASC)
+            const mTasks = [...rawTasks].sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
 
             mTasks.forEach(t => {
                 const proj = t.project_code || '';
@@ -224,7 +230,7 @@ const TaskJournalExporter = (function() {
         }
 
         let idx = 1;
-        members.forEach(member => {
+        sortedMembers.forEach(member => {
             const mId = member.id;
             const mTasks = tasksByMember[mId] || [];
             let mHours = 0.0;

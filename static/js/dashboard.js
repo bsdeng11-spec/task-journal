@@ -57,10 +57,11 @@ async function renderDashboard() {
             elPeriodHeading.textContent = `👥 Team Members Status (${pTitle})`;
         }
 
-        // Render table
+        // Render table (FIFO: Member #1 to #23)
         if (tableBody) {
             tableBody.innerHTML = '';
-            if (!summary.members || summary.members.length === 0) {
+            const memberList = [...(summary.members || [])].sort((a, b) => (Number(a.member_id) || 0) - (Number(b.member_id) || 0));
+            if (memberList.length === 0) {
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="7" class="text-center text-muted" style="padding: 30px;">
@@ -71,7 +72,7 @@ async function renderDashboard() {
                 return;
             }
 
-            summary.members.forEach((m, idx) => {
+            memberList.forEach((m, idx) => {
                 const tr = document.createElement('tr');
                 tr.className = 'member-row';
 
@@ -146,7 +147,8 @@ async function handleExcelExport() {
         const pTitle = periodTitleInput ? periodTitleInput.value : "Period";
         const yr = yearLabelInput ? yearLabelInput.value : String(new Date().getFullYear());
 
-        const members = await TaskJournalDB.getMembers();
+        const rawMembers = await TaskJournalDB.getMembers();
+        const members = [...rawMembers].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)); // FIFO: Member #1 to #23
         const allTasks = await TaskJournalDB.getAllTasksForPeriod(start, end);
 
         // Group tasks by member_id
@@ -155,6 +157,11 @@ async function handleExcelExport() {
             const mId = t.member_id;
             if (!tasksByMember[mId]) tasksByMember[mId] = [];
             tasksByMember[mId].push(t);
+        });
+
+        // Enforce FIFO sorting on each member's tasks (date ASC, id ASC)
+        Object.keys(tasksByMember).forEach(mId => {
+            tasksByMember[mId].sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
         });
 
         await TaskJournalExporter.downloadMasterReport({

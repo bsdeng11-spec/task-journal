@@ -79,14 +79,19 @@ const TaskJournalDB = (function() {
             return DEFAULT_MEMBERS;
         }
         try {
-            return JSON.parse(raw);
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+                return parsed.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+            }
+            return DEFAULT_MEMBERS;
         } catch(e) {
             return DEFAULT_MEMBERS;
         }
     }
 
     function saveLocalMembers(members) {
-        localStorage.setItem('tj_local_members', JSON.stringify(members));
+        const sorted = [...members].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+        localStorage.setItem('tj_local_members', JSON.stringify(sorted));
     }
 
     function getLocalTasks() {
@@ -116,13 +121,14 @@ const TaskJournalDB = (function() {
                     .from('members')
                     .select('*')
                     .eq('active', 1)
-                    .order('id', { ascending: true });
+                    .order('id', { ascending: true }); // FIFO: Earliest registered member first
 
                 const { data, error } = await withTimeout(query, 3500);
 
                 if (!error && data && data.length > 0) {
-                    saveLocalMembers(data);
-                    return data;
+                    const sorted = [...data].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+                    saveLocalMembers(sorted);
+                    return sorted;
                 }
             } catch (e) {
                 console.warn('Supabase getMembers error/timeout, falling back to local cache', e);
@@ -231,43 +237,51 @@ const TaskJournalDB = (function() {
                     .eq('member_id', memberId)
                     .gte('date', startDate)
                     .lte('date', endDate)
-                    .order('date', { ascending: true });
+                    .order('date', { ascending: true })
+                    .order('id', { ascending: true }); // FIFO: Earliest date and earliest inserted first
 
                 const { data, error } = await withTimeout(query, 3500);
 
-                if (!error) return data || [];
+                if (!error && data) {
+                    return data.sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
+                }
             } catch (e) {
                 console.warn('Supabase getTasks error/timeout, fallback to local', e);
             }
         }
 
-        // Local fallback
+        // Local fallback (FIFO)
         const allTasks = getLocalTasks();
-        return allTasks.filter(t => 
-            String(t.member_id) === String(memberId) &&
-            t.date >= startDate &&
-            t.date <= endDate
-        );
+        return allTasks
+            .filter(t => 
+                String(t.member_id) === String(memberId) &&
+                t.date >= startDate &&
+                t.date <= endDate
+            )
+            .sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
     }
 
     async function saveMemberTasks(memberId, startDate, endDate, tasksList, periodCode) {
-        const tasksToInsert = (tasksList || []).map(t => {
-            let numHours = null;
-            if (t.hours !== null && t.hours !== undefined && t.hours !== '-' && t.hours !== '') {
-                const parsed = parseFloat(t.hours);
-                if (!isNaN(parsed)) numHours = parsed;
-            }
-            return {
-                member_id: parseInt(memberId),
-                date: t.date,
-                project_code: t.project_code || '',
-                task_type: t.task_type || '',
-                description: t.description || '',
-                hours: numHours,
-                is_special: t.is_special || 'Work',
-                period_code: periodCode || ''
-            };
-        });
+        // Enforce FIFO chronological order prior to inserting
+        const tasksToInsert = (tasksList || [])
+            .map(t => {
+                let numHours = null;
+                if (t.hours !== null && t.hours !== undefined && t.hours !== '-' && t.hours !== '') {
+                    const parsed = parseFloat(t.hours);
+                    if (!isNaN(parsed)) numHours = parsed;
+                }
+                return {
+                    member_id: parseInt(memberId),
+                    date: t.date,
+                    project_code: t.project_code || '',
+                    task_type: t.task_type || '',
+                    description: t.description || '',
+                    hours: numHours,
+                    is_special: t.is_special || 'Work',
+                    period_code: periodCode || ''
+                };
+            })
+            .sort((a, b) => a.date.localeCompare(b.date));
 
         if (client) {
             try {
@@ -292,12 +306,17 @@ const TaskJournalDB = (function() {
             }
         }
 
-        // Local fallback
+        // Local fallback (FIFO)
         let allTasks = getLocalTasks();
         allTasks = allTasks.filter(t => 
             !(String(t.member_id) === String(memberId) && t.date >= startDate && t.date <= endDate)
         );
+        let maxId = allTasks.reduce((max, t) => Math.max(max, Number(t.id) || 0), 0);
+        tasksToInsert.forEach(t => {
+            if (!t.id) t.id = ++maxId;
+        });
         allTasks.push(...tasksToInsert);
+        allTasks.sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
         saveLocalTasks(allTasks);
         return { success: true };
     }
@@ -310,20 +329,26 @@ const TaskJournalDB = (function() {
                     .select('*')
                     .gte('date', startDate)
                     .lte('date', endDate)
-                    .order('date', { ascending: true });
+                    .order('date', { ascending: true })
+                    .order('id', { ascending: true }); // FIFO
 
-                if (!error) return data || [];
+                if (!error && data) {
+                    return data.sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
+                }
             } catch (e) {
                 console.warn('Supabase getAllTasks error, using local fallback', e);
             }
         }
 
         const allTasks = getLocalTasks();
-        return allTasks.filter(t => t.date >= startDate && t.date <= endDate);
+        return allTasks
+            .filter(t => t.date >= startDate && t.date <= endDate)
+            .sort((a, b) => a.date.localeCompare(b.date) || ((Number(a.id) || 0) - (Number(b.id) || 0)));
     }
 
     async function getPeriodSummary(startDate, endDate) {
-        const members = await getMembers();
+        const rawMembers = await getMembers();
+        const members = [...rawMembers].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)); // FIFO: Member #1 to #23
         const tasks = await getAllTasksForPeriod(startDate, endDate);
 
         // Group tasks by member_id
