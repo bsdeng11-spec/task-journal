@@ -257,6 +257,103 @@ document.addEventListener('DOMContentLoaded', async function() {
         calculateTotalHours();
     }
 
+    // =========================================================
+    // Strict Project Code Validation Helpers (e.g. 1880-01, -02)
+    // =========================================================
+    function isRowLeaveOrWeekend(tr) {
+        if (!tr) return false;
+        if (tr.classList.contains('weekend-row') ||
+            tr.classList.contains('leave-vacation-row') ||
+            tr.classList.contains('leave-sick-row') ||
+            tr.classList.contains('leave-emergency-row') ||
+            tr.classList.contains('leave-other-row')) {
+            return true;
+        }
+        const hoursInput = tr.querySelector('.row-hours');
+        const descInput = tr.querySelector('.row-desc');
+        const hours = hoursInput ? hoursInput.value.trim() : '';
+        const desc = descInput ? descInput.value.trim().toLowerCase() : '';
+        return (hours === '-' || desc.includes('weekend') || desc.includes('holiday') || desc.includes('vacation') || desc.includes('vaccation') || desc.includes('sick') || desc.includes('emergency'));
+    }
+
+    function normalizeProjectCode(rawVal) {
+        let clean = (rawVal || '').trim();
+        if (!clean || clean === '-') return clean;
+        // Auto convert spaces or dots between project number and sub-number e.g. "1880 01" or "1880.01" -> "1880-01"
+        clean = clean.replace(/^([A-Za-z0-9]+)[\s.](\d+)$/, '$1-$2');
+        // Auto pad single digit suffix e.g. "1880-1" -> "1880-01"
+        clean = clean.replace(/-(\d)$/, '-0$1');
+        return clean;
+    }
+
+    function checkProjectCodeStatus(val, isLeave = false) {
+        if (isLeave) return { valid: true };
+        const clean = (val || '').trim();
+        if (!clean) {
+            return { valid: false, message: '⚠️ Project number is required' };
+        }
+        if (clean === '-') {
+            return { valid: false, message: '⚠️ Enter project # (e.g. 1880-01) or pick Leave' };
+        }
+        // Must contain hyphen e.g. 1880-01
+        if (!clean.includes('-')) {
+            return { valid: false, message: `⚠️ Missing sub-number: write e.g. ${clean}-01` };
+        }
+        // Check after hyphen
+        const parts = clean.split('-');
+        const suffix = parts.slice(1).join('-');
+        if (!suffix || suffix.trim() === '') {
+            return { valid: false, message: '⚠️ Missing number after hyphen (e.g. -01, -02)' };
+        }
+        if (!/\d+/.test(suffix)) {
+            return { valid: false, message: '⚠️ Sub-number must include digits (e.g. -01, -02)' };
+        }
+        return { valid: true };
+    }
+
+    function validateProjectInput(projInput, isStrict = false) {
+        if (!projInput) return true;
+        const tr = projInput.closest('tr');
+        if (!tr) return true;
+
+        const isLeave = isRowLeaveOrWeekend(tr);
+        const msgEl = tr.querySelector('.proj-validation-msg');
+
+        if (isLeave) {
+            projInput.classList.remove('is-invalid-proj');
+            if (msgEl) {
+                msgEl.style.display = 'none';
+                msgEl.textContent = '';
+            }
+            return true;
+        }
+
+        const normalized = normalizeProjectCode(projInput.value);
+        if (normalized !== projInput.value) {
+            projInput.value = normalized;
+        }
+
+        const status = checkProjectCodeStatus(projInput.value, isLeave);
+
+        if (!status.valid) {
+            if (isStrict || projInput.value.trim() !== '') {
+                projInput.classList.add('is-invalid-proj');
+                if (msgEl) {
+                    msgEl.style.display = 'block';
+                    msgEl.textContent = status.message;
+                }
+            }
+            return false;
+        } else {
+            projInput.classList.remove('is-invalid-proj');
+            if (msgEl) {
+                msgEl.style.display = 'none';
+                msgEl.textContent = '';
+            }
+            return true;
+        }
+    }
+
     function addRow(data = {}) {
         if (!tableBody) return;
         const placeholder = document.getElementById('emptyRowPlaceholder');
@@ -292,7 +389,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <input type="date" class="row-date form-control" value="${dateVal}">
             </td>
             <td>
-                <input type="text" class="row-proj form-control" placeholder="e.g. 1880-01" value="${projVal}">
+                <div class="proj-input-wrap">
+                    <input type="text" class="row-proj form-control" placeholder="e.g. 1880-01" value="${projVal}" autocomplete="off">
+                    <div class="proj-validation-msg" style="display: none;"></div>
+                </div>
             </td>
             <td>
                 <input type="text" list="taskTypeList" class="row-task form-control" placeholder="e.g. Fixing" value="${taskVal}">
@@ -317,6 +417,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <button type="button" class="btn-delete" title="Delete Row">&times;</button>
             </td>
         `;
+
+        const projInput = tr.querySelector('.row-proj');
+        if (projInput) {
+            projInput.addEventListener('input', function() {
+                validateProjectInput(projInput, false);
+            });
+            projInput.addEventListener('blur', function() {
+                validateProjectInput(projInput, true);
+            });
+            projInput.addEventListener('change', function() {
+                validateProjectInput(projInput, true);
+            });
+        }
 
         const hoursInput = tr.querySelector('.row-hours');
         hoursInput.addEventListener('input', calculateTotalHours);
@@ -398,6 +511,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else if (leaveType === 'other') {
             tr.classList.add('leave-other-row');
         }
+
+        // Clear project code validation error when leave tag is applied
+        const projInput = tr.querySelector('.row-proj');
+        if (projInput) {
+            projInput.classList.remove('is-invalid-proj');
+            const msgEl = tr.querySelector('.proj-validation-msg');
+            if (msgEl) {
+                msgEl.style.display = 'none';
+                msgEl.textContent = '';
+            }
+        }
     }
 
     function calculateTotalHours() {
@@ -435,13 +559,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         const memberId = memberSelect.value;
         const rows = document.querySelectorAll('#tableBody tr');
         const tasks = [];
+        const invalidRows = [];
 
         rows.forEach(r => {
             const dateInput = r.querySelector('.row-date');
             if (!dateInput) return;
 
+            const projInput = r.querySelector('.row-proj');
             const date = dateInput.value;
-            const proj = r.querySelector('.row-proj').value.trim();
+            const projRaw = projInput ? projInput.value.trim() : '';
             const task = r.querySelector('.row-task').value.trim();
             const desc = r.querySelector('.row-desc').value.trim();
             const hours = r.querySelector('.row-hours').value.trim();
@@ -455,15 +581,49 @@ document.addEventListener('DOMContentLoaded', async function() {
             else if (descLower.includes('emergency')) isSpecial = 'Emergency';
             else if (descLower.includes('other leave') || descLower.includes('leave')) isSpecial = 'Other';
 
+            const isLeave = (isSpecial !== 'Work');
+            if (!isLeave) {
+                // Must be fully written with sub-number like -01, -02...
+                const isValid = validateProjectInput(projInput, true);
+                if (!isValid) {
+                    invalidRows.push({
+                        row: r,
+                        input: projInput,
+                        date: date,
+                        val: projRaw
+                    });
+                }
+            } else if (projInput) {
+                projInput.classList.remove('is-invalid-proj');
+                const msgEl = r.querySelector('.proj-validation-msg');
+                if (msgEl) msgEl.style.display = 'none';
+            }
+
             tasks.push({
                 date: date,
-                project_code: proj,
+                project_code: projInput ? projInput.value.trim() : projRaw,
                 task_type: task,
                 description: desc,
                 hours: hours,
                 is_special: isSpecial
             });
         });
+
+        if (invalidRows.length > 0) {
+            const first = invalidRows[0];
+            first.input.focus();
+            first.input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const missingHint = first.val ? `"${first.val}" is incomplete (missing -01, -02...)` : 'field is empty';
+            const alertMsg = `⚠️ Project number is not fully written on row for ${first.date} (${missingHint})!\n\nPlease write the complete project code including the sub-number (e.g. 1880-01, 1880-02) before saving.`;
+            
+            if (saveStatus) {
+                saveStatus.textContent = `❌ Cannot save: Incomplete project number on ${first.date}. Add sub-number like -01, -02.`;
+                saveStatus.style.color = '#DC2626';
+            }
+            alert(alertMsg);
+            return;
+        }
 
         // Enforce FIFO chronological sorting before saving
         tasks.sort((a, b) => a.date.localeCompare(b.date));

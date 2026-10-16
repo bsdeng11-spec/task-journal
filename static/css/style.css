@@ -701,6 +701,48 @@ body[data-bim-theme="cad-light"] input[type="date"]::-webkit-calendar-picker-ind
     border-color: var(--primary);
 }
 
+/* Strict Project Code Validation Styles */
+.proj-input-wrap {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+}
+
+.row-proj.is-invalid-proj {
+    border: 2px solid #EF4444 !important;
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #F87171 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+    animation: projInputPulse 0.3s ease-in-out;
+}
+
+body[data-bim-theme="cad-light"] .row-proj.is-invalid-proj {
+    border: 2px solid #DC2626 !important;
+    background-color: #FEF2F2 !important;
+    color: #991B1B !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+}
+
+.proj-validation-msg {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #F87171;
+    margin-top: 3px;
+    line-height: 1.25;
+    letter-spacing: -0.1px;
+}
+
+body[data-bim-theme="cad-light"] .proj-validation-msg {
+    color: #DC2626;
+}
+
+@keyframes projInputPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
 /* Quick tag buttons */
 .tag-btn-group {
     display: flex;
