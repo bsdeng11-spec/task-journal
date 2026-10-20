@@ -666,6 +666,22 @@ body[data-bim-theme="cad-light"] input[type="date"]::-webkit-calendar-picker-ind
     font-size: 0.9rem;
 }
 
+.timesheet-table {
+    min-width: 1300px;
+}
+
+.timesheet-table th.th-desc,
+.timesheet-table td:nth-child(4) {
+    min-width: 440px;
+}
+
+.timesheet-table .row-desc {
+    min-width: 420px;
+    width: 100%;
+    font-size: 0.92rem;
+    padding: 8px 10px;
+}
+
 .timesheet-table th, .dashboard-table th {
     background-color: var(--table-th-bg);
     color: var(--text-main);
@@ -711,26 +727,23 @@ body[data-bim-theme="cad-light"] input[type="date"]::-webkit-calendar-picker-ind
 
 .row-proj.is-invalid-proj {
     border: 2px solid #EF4444 !important;
-    background-color: rgba(239, 68, 68, 0.12) !important;
-    color: #F87171 !important;
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+    background-color: rgba(239, 68, 68, 0.16) !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3) !important;
     animation: projInputPulse 0.3s ease-in-out;
 }
 
 body[data-bim-theme="cad-light"] .row-proj.is-invalid-proj {
     border: 2px solid #DC2626 !important;
-    background-color: #FEF2F2 !important;
-    color: #991B1B !important;
-    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+    background-color: #FEE2E2 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25) !important;
 }
 
 .proj-validation-msg {
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: #F87171;
-    margin-top: 3px;
+    margin-top: 4px;
     line-height: 1.25;
-    letter-spacing: -0.1px;
 }
 
 body[data-bim-theme="cad-light"] .proj-validation-msg {

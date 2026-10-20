@@ -411,24 +411,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         const projInput = tr.querySelector('.row-proj');
         if (projInput) {
             projInput.addEventListener('input', function() {
-                // When actively typing or deleting, clear error styling as soon as valid or cleared
-                const isLeave = isRowLeaveOrWeekend(tr);
-                const status = checkProjectCodeStatus(projInput.value, isLeave);
-                const msgEl = tr.querySelector('.proj-validation-msg');
-                if (status.valid || projInput.value.trim() === '') {
-                    projInput.classList.remove('is-invalid-proj');
-                    if (msgEl) {
-                        msgEl.style.display = 'none';
-                        msgEl.textContent = '';
-                    }
-                }
+                // Real-time validation: show red restriction & warning if incomplete, remove when completed
+                validateProjectInput(projInput, false);
             });
             projInput.addEventListener('blur', function() {
-                validateProjectInput(projInput, false);
+                validateProjectInput(projInput, true);
             });
             projInput.addEventListener('change', function() {
-                validateProjectInput(projInput, false);
+                validateProjectInput(projInput, true);
             });
+
+            // Initial check if pre-populated with data
+            if (projVal.trim() !== '') {
+                validateProjectInput(projInput, false);
+            }
         }
 
         const hoursInput = tr.querySelector('.row-hours');
