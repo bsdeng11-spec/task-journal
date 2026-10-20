@@ -289,11 +289,19 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (!clean.includes('-')) {
             return { valid: false, message: `⚠️ Missing sub-number: write e.g. ${clean}-01` };
         }
-        // Check after hyphen
+        // Check prefix and suffix after hyphen
         const parts = clean.split('-');
-        const suffix = parts.slice(1).join('-');
-        if (!suffix || suffix.trim() === '') {
+        const prefix = parts[0].trim();
+        const suffix = parts.slice(1).join('-').trim();
+        if (!suffix) {
             return { valid: false, message: '⚠️ Missing number after hyphen (e.g. -01, -02)' };
+        }
+        // Sub-number MUST be exactly two digits (e.g. -01, -02, -00)
+        if (!/^\d{2}$/.test(suffix)) {
+            if (/^\d$/.test(suffix)) {
+                return { valid: false, message: `⚠️ Must be exactly 2 digits: write ${prefix}-0${suffix}` };
+            }
+            return { valid: false, message: `⚠️ Sub-number must be exactly 2 digits (e.g. ${prefix}-01)` };
         }
         return { valid: true };
     }
@@ -610,11 +618,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             first.input.focus();
             first.input.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
-            const missingHint = first.val ? `"${first.val}" is incomplete (missing -01, -02...)` : 'field is empty';
-            const alertMsg = `⚠️ Project number is not fully written on row for ${first.date} (${missingHint})!\n\nPlease write the complete project code including the sub-number (e.g. 1880-01, 1880-02) before saving.`;
+            const missingHint = first.val ? `"${first.val}" must have exactly 2 digits after the hyphen (e.g. -01, -02)` : 'field is empty';
+            const alertMsg = `⚠️ Project number is invalid on row for ${first.date} (${missingHint})!\n\nPlease write the complete project code with exactly two digits after the hyphen (e.g. 1880-01, 6049-01) before saving.`;
             
             if (saveStatus) {
-                saveStatus.textContent = `❌ Cannot save: Incomplete project number on ${first.date}. Add sub-number like -01, -02.`;
+                saveStatus.textContent = `❌ Cannot save: Incomplete project code on ${first.date}. Must have 2 digits after hyphen (e.g. -01, -02).`;
                 saveStatus.style.color = '#DC2626';
             }
             alert(alertMsg);
