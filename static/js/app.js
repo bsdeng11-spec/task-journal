@@ -276,16 +276,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return (hours === '-' || desc.includes('weekend') || desc.includes('holiday') || desc.includes('vacation') || desc.includes('vaccation') || desc.includes('sick') || desc.includes('emergency'));
     }
 
-    function normalizeProjectCode(rawVal) {
-        let clean = (rawVal || '').trim();
-        if (!clean || clean === '-') return clean;
-        // Auto convert spaces or dots between project number and sub-number e.g. "1880 01" or "1880.01" -> "1880-01"
-        clean = clean.replace(/^([A-Za-z0-9]+)[\s.](\d+)$/, '$1-$2');
-        // Auto pad single digit suffix e.g. "1880-1" -> "1880-01"
-        clean = clean.replace(/-(\d)$/, '-0$1');
-        return clean;
-    }
-
     function checkProjectCodeStatus(val, isLeave = false) {
         if (isLeave) return { valid: true };
         const clean = (val || '').trim();
@@ -304,9 +294,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const suffix = parts.slice(1).join('-');
         if (!suffix || suffix.trim() === '') {
             return { valid: false, message: '⚠️ Missing number after hyphen (e.g. -01, -02)' };
-        }
-        if (!/\d+/.test(suffix)) {
-            return { valid: false, message: '⚠️ Sub-number must include digits (e.g. -01, -02)' };
         }
         return { valid: true };
     }
@@ -328,11 +315,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             return true;
         }
 
-        const normalized = normalizeProjectCode(projInput.value);
-        if (normalized !== projInput.value) {
-            projInput.value = normalized;
-        }
-
+        // Never auto-mutate or inject characters into projInput.value!
+        // Allow the user to type and delete completely freely.
         const status = checkProjectCodeStatus(projInput.value, isLeave);
 
         if (!status.valid) {
@@ -341,6 +325,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (msgEl) {
                     msgEl.style.display = 'block';
                     msgEl.textContent = status.message;
+                }
+            } else {
+                projInput.classList.remove('is-invalid-proj');
+                if (msgEl) {
+                    msgEl.style.display = 'none';
+                    msgEl.textContent = '';
                 }
             }
             return false;
@@ -421,13 +411,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         const projInput = tr.querySelector('.row-proj');
         if (projInput) {
             projInput.addEventListener('input', function() {
-                validateProjectInput(projInput, false);
+                // When actively typing or deleting, clear error styling as soon as valid or cleared
+                const isLeave = isRowLeaveOrWeekend(tr);
+                const status = checkProjectCodeStatus(projInput.value, isLeave);
+                const msgEl = tr.querySelector('.proj-validation-msg');
+                if (status.valid || projInput.value.trim() === '') {
+                    projInput.classList.remove('is-invalid-proj');
+                    if (msgEl) {
+                        msgEl.style.display = 'none';
+                        msgEl.textContent = '';
+                    }
+                }
             });
             projInput.addEventListener('blur', function() {
-                validateProjectInput(projInput, true);
+                validateProjectInput(projInput, false);
             });
             projInput.addEventListener('change', function() {
-                validateProjectInput(projInput, true);
+                validateProjectInput(projInput, false);
             });
         }
 
