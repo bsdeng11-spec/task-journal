@@ -96,10 +96,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Add custom row
     if (btnAddRow) {
         btnAddRow.addEventListener('click', function() {
+            const allDateInputs = document.querySelectorAll('.row-date');
+            let defaultDate = startDateInput ? startDateInput.value : '';
+            if (allDateInputs.length > 0) {
+                const lastDate = allDateInputs[allDateInputs.length - 1].value;
+                if (lastDate) defaultDate = lastDate;
+            }
             addRow({
-                date: startDateInput ? startDateInput.value : '',
-                hours: '9'
+                date: defaultDate,
+                hours: ''
             });
+            calculateTotalHours();
         });
     }
 
@@ -399,7 +406,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <input type="text" class="row-desc form-control" placeholder="Work description..." value="${descVal}">
             </td>
             <td>
-                <input type="text" class="row-hours form-control" placeholder="Hours" value="${hoursVal}">
+                <div class="hours-input-wrap">
+                    <input type="text" class="row-hours form-control" placeholder="Hours" value="${hoursVal}">
+                    <div class="hours-validation-msg" style="display: none;"></div>
+                </div>
             </td>
             <td>
                 <div class="tag-btn-group tag-btn-grid">
@@ -435,8 +445,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
 
+        const dateInput = tr.querySelector('.row-date');
+        if (dateInput) {
+            dateInput.addEventListener('change', calculateTotalHours);
+            dateInput.addEventListener('input', calculateTotalHours);
+        }
+
         const hoursInput = tr.querySelector('.row-hours');
-        hoursInput.addEventListener('input', calculateTotalHours);
+        if (hoursInput) {
+            hoursInput.addEventListener('input', calculateTotalHours);
+            hoursInput.addEventListener('change', calculateTotalHours);
+            hoursInput.addEventListener('blur', calculateTotalHours);
+        }
 
         tr.querySelector('.btn-delete').addEventListener('click', function() {
             tr.remove();
@@ -526,6 +546,97 @@ document.addEventListener('DOMContentLoaded', async function() {
                 msgEl.textContent = '';
             }
         }
+        const hoursInput = tr.querySelector('.row-hours');
+        if (hoursInput) {
+            hoursInput.classList.remove('is-invalid-hours');
+            const hMsgEl = tr.querySelector('.hours-validation-msg');
+            if (hMsgEl) {
+                hMsgEl.style.display = 'none';
+                hMsgEl.textContent = '';
+            }
+        }
+    }
+
+    function validateDailyHours() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        const dayMap = {};
+
+        rows.forEach(tr => {
+            const dateInput = tr.querySelector('.row-date');
+            const hoursInput = tr.querySelector('.row-hours');
+            if (!dateInput || !hoursInput) return;
+
+            const dateVal = dateInput.value.trim();
+            if (!dateVal) return;
+
+            const hVal = parseFloat(hoursInput.value.trim());
+            const hoursNum = (!isNaN(hVal) && hVal > 0) ? hVal : 0;
+
+            if (!dayMap[dateVal]) {
+                dayMap[dateVal] = { total: 0, items: [] };
+            }
+            dayMap[dateVal].total += hoursNum;
+            dayMap[dateVal].items.push({ tr, hoursInput, hoursNum });
+        });
+
+        let hasOverHours = false;
+        const overHoursDays = [];
+
+        Object.keys(dayMap).forEach(dateVal => {
+            const data = dayMap[dateVal];
+            const dayTotal = Math.round(data.total * 100) / 100;
+
+            if (dayTotal > 9.0) {
+                hasOverHours = true;
+                overHoursDays.push({ date: dateVal, total: dayTotal, items: data.items });
+
+                data.items.forEach(item => {
+                    item.hoursInput.classList.add('is-invalid-hours');
+                    const msgEl = item.tr.querySelector('.hours-validation-msg');
+                    if (msgEl) {
+                        msgEl.style.display = 'block';
+                        msgEl.textContent = `⚠️ Day: ${dayTotal}h (>9:00)`;
+                    }
+                });
+            } else {
+                data.items.forEach(item => {
+                    item.hoursInput.classList.remove('is-invalid-hours');
+                    const msgEl = item.tr.querySelector('.hours-validation-msg');
+                    if (msgEl) {
+                        msgEl.style.display = 'none';
+                        msgEl.textContent = '';
+                    }
+                });
+            }
+        });
+
+        // Rows without date but with single row > 9 hrs
+        rows.forEach(tr => {
+            const dateInput = tr.querySelector('.row-date');
+            const hoursInput = tr.querySelector('.row-hours');
+            if (!dateInput || !hoursInput) return;
+            if (!dateInput.value.trim()) {
+                const hVal = parseFloat(hoursInput.value.trim());
+                if (!isNaN(hVal) && hVal > 9.0) {
+                    hoursInput.classList.add('is-invalid-hours');
+                    const msgEl = tr.querySelector('.hours-validation-msg');
+                    if (msgEl) {
+                        msgEl.style.display = 'block';
+                        msgEl.textContent = `⚠️ Max 9:00 hrs`;
+                    }
+                    hasOverHours = true;
+                } else {
+                    hoursInput.classList.remove('is-invalid-hours');
+                    const msgEl = tr.querySelector('.hours-validation-msg');
+                    if (msgEl) {
+                        msgEl.style.display = 'none';
+                        msgEl.textContent = '';
+                    }
+                }
+            }
+        });
+
+        return { hasOverHours, overHoursDays };
     }
 
     function calculateTotalHours() {
@@ -551,6 +662,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                 hoursProgressBar.style.backgroundColor = '#CBD5E1';
             }
         }
+
+        // Real-time daily hours check (9:00 max per day)
+        validateDailyHours();
     }
 
     async function saveCurrentTasks() {
@@ -623,6 +737,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (saveStatus) {
                 saveStatus.textContent = `❌ Cannot save: Incomplete project code on ${first.date}. Must have 2 digits after hyphen (e.g. -01, -02).`;
+                saveStatus.style.color = '#DC2626';
+            }
+            alert(alertMsg);
+            return;
+        }
+
+        // Validate Daily Hours limit (must not exceed 9:00 per day)
+        const dailyCheck = validateDailyHours();
+        if (dailyCheck.hasOverHours) {
+            const first = dailyCheck.overHoursDays[0];
+            const targetItem = first.items && first.items[first.items.length - 1];
+            if (targetItem && targetItem.hoursInput) {
+                targetItem.hoursInput.focus();
+                targetItem.hoursInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            const alertMsg = `⚠️ Daily Hours Warning!\n\nThe total hours for ${first.date} is ${first.total} hours, which exceeds the general work limit of 9:00 per day.\n\nPlease adjust the hours for ${first.date} so the daily total does not exceed 9:00 before saving.`;
+
+            if (saveStatus) {
+                saveStatus.textContent = `❌ Cannot save: Hours on ${first.date} total ${first.total}h (exceeds 9:00 daily max).`;
                 saveStatus.style.color = '#DC2626';
             }
             alert(alertMsg);
