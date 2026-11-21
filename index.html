@@ -59,7 +59,7 @@
                 
                 <div class="nav-links">
                     <a href="index.html" class="nav-link active">Timesheet</a>
-                    <a href="dashboard.html" class="nav-link">Manager Dashboard</a>
+                    <a href="dashboard.html" class="nav-link" id="navManagerDashboardLink">Manager Dashboard</a>
                 </div>
             </div>
         </div>
@@ -92,7 +92,7 @@
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
                             <label for="memberSelect"><strong>Team Member (Executor)</strong></label>
-                            <button type="button" class="btn btn-outline btn-sm" onclick="openEnterSystemModal(true)" style="padding: 2px 8px; font-size: 0.76rem; border-color: #EA580C; color: #EA580C;">
+                            <button type="button" class="btn btn-outline btn-sm" id="btnSwitchUser" onclick="openEnterSystemModal(true)" style="padding: 2px 8px; font-size: 0.76rem; border-color: #EA580C; color: #EA580C;">
                                 👤 Switch / Change Name
                             </button>
                         </div>

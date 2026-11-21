@@ -796,8 +796,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 // =========================================================
-// Global Member & Modal Management (Image 2 System Entry)
+// Global Member & Modal Management (Admin: Miki)
 // =========================================================
+
+const ADMIN_NAME = 'miki';
+const ADMIN_MP = '9771';
+const ADMIN_PASSWORD = 'admin123';
+
+function isCurrentExecutorAdmin() {
+    if (sessionStorage.getItem('tj_admin_authenticated') === 'true') return true;
+    const currentName = (localStorage.getItem('current_executor_name') || '').trim().toLowerCase();
+    const currentMp = (localStorage.getItem('current_executor_mp') || '').trim();
+    return currentName === ADMIN_NAME || currentMp === ADMIN_MP;
+}
 
 async function loadMembers() {
     try {
@@ -812,6 +823,13 @@ function populateMemberDropdowns(members) {
     const sortedMembers = [...(members || [])].sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0)); // FIFO
     const modalSelect = document.getElementById('modalMemberSelect');
     const pageSelect = document.getElementById('memberSelect');
+    const btnSwitchUser = document.getElementById('btnSwitchUser');
+    const navDashboardLink = document.getElementById('navManagerDashboardLink');
+    const navSwitchTag = document.querySelector('.executor-switch-tag');
+
+    const currentId = localStorage.getItem('current_executor_id');
+    const activeMember = sortedMembers.find(m => String(m.id) === String(currentId));
+    const isAdmin = isCurrentExecutorAdmin();
 
     if (modalSelect) {
         modalSelect.innerHTML = `
@@ -824,12 +842,47 @@ function populateMemberDropdowns(members) {
     }
 
     if (pageSelect) {
-        const currentVal = pageSelect.value;
-        pageSelect.innerHTML = `
-            <option value="">-- Choose Your Name --</option>
-            ${sortedMembers.map(m => `<option value="${m.id}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
-        `;
-        if (currentVal) pageSelect.value = currentVal;
+        if (isAdmin) {
+            // Admin (Miki): full dropdown to switch and view any user
+            const currentVal = pageSelect.value || (activeMember ? activeMember.id : '');
+            pageSelect.innerHTML = `
+                <option value="">-- Choose Member (Admin View) --</option>
+                ${sortedMembers.map(m => `<option value="${m.id}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
+            `;
+            if (currentVal) pageSelect.value = currentVal;
+            pageSelect.disabled = false;
+            pageSelect.style.cursor = 'pointer';
+
+            if (btnSwitchUser) {
+                btnSwitchUser.style.display = 'inline-block';
+                btnSwitchUser.innerHTML = '👑 Switch User';
+            }
+            if (navDashboardLink) navDashboardLink.style.display = 'inline-block';
+            if (navSwitchTag) navSwitchTag.style.display = 'inline-block';
+        } else if (activeMember) {
+            // Regular user (e.g. Werkey M.): ONLY sees their own name, locked to their account
+            pageSelect.innerHTML = `
+                <option value="${activeMember.id}" data-mp="${activeMember.mp_number}">${activeMember.name} (MP# ${activeMember.mp_number})</option>
+            `;
+            pageSelect.value = activeMember.id;
+            pageSelect.disabled = true; // Lock dropdown
+            pageSelect.style.cursor = 'not-allowed';
+
+            if (btnSwitchUser) {
+                btnSwitchUser.style.display = 'none'; // Hide switch button for regular users
+            }
+            if (navDashboardLink) {
+                navDashboardLink.style.display = 'none'; // Hide manager dashboard link
+            }
+            if (navSwitchTag) {
+                navSwitchTag.style.display = 'none'; // Hide switch indicator
+            }
+        } else {
+            pageSelect.innerHTML = `
+                <option value="">-- Choose Your Name --</option>
+                ${sortedMembers.map(m => `<option value="${m.id}" data-mp="${m.mp_number}">${m.name} (MP# ${m.mp_number})</option>`).join('')}
+            `;
+        }
     }
 }
 
@@ -839,16 +892,38 @@ function setSystemExecutor(member) {
     localStorage.setItem('current_executor_name', member.name);
     localStorage.setItem('current_executor_mp', member.mp_number);
 
+    const isMiki = (member.name || '').trim().toLowerCase() === ADMIN_NAME || String(member.mp_number) === ADMIN_MP;
+    if (isMiki) {
+        sessionStorage.setItem('tj_admin_authenticated', 'true');
+    }
+    const isAdmin = isMiki || sessionStorage.getItem('tj_admin_authenticated') === 'true';
+
     const navName = document.getElementById('navExecutorNameText');
     if (navName) {
-        navName.textContent = `${member.name} (${member.mp_number})`;
+        navName.textContent = isAdmin ? `👑 Admin: ${member.name} (${member.mp_number})` : `${member.name} (${member.mp_number})`;
     }
 
     const modalSelect = document.getElementById('modalMemberSelect');
     if (modalSelect) modalSelect.value = member.id;
+
+    populateMemberDropdowns(allMembersCache);
 }
 
 window.openEnterSystemModal = function(isCancelable = true) {
+    const currentId = localStorage.getItem('current_executor_id');
+    const isAdmin = isCurrentExecutorAdmin();
+
+    // If an account is already selected and user is NOT admin, require Admin password to switch
+    if (currentId && !isAdmin && isCancelable) {
+        const pwd = prompt('🔒 Admin Authorization Required:\nOnly Admin (Miki) can switch accounts or view other team members.\n\nEnter Admin Password:');
+        if (pwd !== ADMIN_PASSWORD) {
+            if (pwd !== null) alert('❌ Incorrect password. Access denied.');
+            return;
+        }
+        sessionStorage.setItem('tj_admin_authenticated', 'true');
+        populateMemberDropdowns(allMembersCache);
+    }
+
     const overlay = document.getElementById('enterSystemOverlay');
     const closeBtn = document.getElementById('btnCloseOverlayBtn');
     const errBox = document.getElementById('entryErrorNotice');
@@ -857,7 +932,6 @@ window.openEnterSystemModal = function(isCancelable = true) {
     if (overlay) overlay.style.display = 'flex';
     if (closeBtn) closeBtn.style.display = isCancelable ? 'block' : 'none';
 
-    const currentId = localStorage.getItem('current_executor_id');
     const modalSelect = document.getElementById('modalMemberSelect');
     if (modalSelect && currentId) {
         modalSelect.value = currentId;
