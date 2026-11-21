@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const descInput = tr.querySelector('.row-desc');
         const hours = hoursInput ? hoursInput.value.trim() : '';
         const desc = descInput ? descInput.value.trim().toLowerCase() : '';
-        return (hours === '-' || desc.includes('weekend') || desc.includes('holiday') || desc.includes('vacation') || desc.includes('vaccation') || desc.includes('sick') || desc.includes('emergency'));
+        return (hours === '-' || desc.includes('weekend') || desc.includes('holiday') || desc.includes('vacation') || desc.includes('vaccation') || desc.includes('sick') || desc.includes('emergency') || desc.includes('waiting') || desc.includes('wait') || desc.includes('leave'));
     }
 
     function checkProjectCodeStatus(val, isLeave = false) {
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             else if (descLower.includes('vacation') || descLower.includes('vaccation')) isSpecial = 'Vacation';
             else if (descLower.includes('sick')) isSpecial = 'Sick';
             else if (descLower.includes('emergency')) isSpecial = 'Emergency';
-            else if (descLower.includes('other')) isSpecial = 'Other';
+            else if (descLower.includes('other') || descLower.includes('waiting') || descLower.includes('wait') || descLower.includes('leave')) isSpecial = 'Other';
             else isSpecial = 'Work';
         }
 
@@ -697,7 +697,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             else if (descLower.includes('vacation') || descLower.includes('vaccation')) isSpecial = 'Vacation';
             else if (descLower.includes('sick')) isSpecial = 'Sick';
             else if (descLower.includes('emergency')) isSpecial = 'Emergency';
-            else if (descLower.includes('other leave') || descLower.includes('leave')) isSpecial = 'Other';
+            else if (descLower.includes('other') || descLower.includes('waiting') || descLower.includes('wait') || descLower.includes('leave')) isSpecial = 'Other';
 
             const isLeave = (isSpecial !== 'Work');
             if (!isLeave) {

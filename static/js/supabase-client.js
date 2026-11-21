@@ -17,20 +17,22 @@ const TaskJournalDB = (function() {
         { id: 7, name: "Fanuel", mp_number: "9827" },
         { id: 8, name: "Tesfaye", mp_number: "9784" },
         { id: 9, name: "Etsubdink", mp_number: "9787" },
-        { id: 10, name: "Abel", mp_number: "9788" },
+        { id: 10, name: "Mirtnat T.", mp_number: "9843" },
         { id: 11, name: "Endris", mp_number: "9789" },
         { id: 12, name: "Temesgen", mp_number: "9791" },
-        { id: 13, name: "Biruk/nardos", mp_number: "9806" },
+        { id: 13, name: "Biniyam", mp_number: "9847" },
         { id: 14, name: "Yemiserach", mp_number: "9807" },
         { id: 15, name: "Tekle", mp_number: "9808" },
-        { id: 16, name: "Eyerusalem", mp_number: "9810" },
+        { id: 16, name: "Ayantu", mp_number: "9841" },
         { id: 17, name: "Ribka", mp_number: "9813" },
         { id: 18, name: "Alemu", mp_number: "9814" },
         { id: 19, name: "Dejen", mp_number: "9816" },
-        { id: 20, name: "Yeabsira/Getnet.G", mp_number: "9817" },
+        { id: 20, name: "Yeabsira", mp_number: "9845" },
         { id: 21, name: "Getnet.W", mp_number: "9818" },
         { id: 22, name: "Habtam", mp_number: "9819" },
-        { id: 23, name: "Selam", mp_number: "9828" }
+        { id: 23, name: "Hanna M.", mp_number: "9844" },
+        { id: 24, name: "Jemila", mp_number: "9846" },
+        { id: 25, name: "Werkey M.", mp_number: "9842" }
     ];
 
     function init() {
@@ -285,13 +287,17 @@ const TaskJournalDB = (function() {
 
         if (client) {
             try {
-                // Delete previous entries for this period and member
+                // Delete previous entries covering the full date range of the period and tasks
+                const allDates = (tasksToInsert || []).map(t => t.date).filter(Boolean);
+                const minDate = allDates.reduce((min, d) => (d < min ? d : min), startDate);
+                const maxDate = allDates.reduce((max, d) => (d > max ? d : max), endDate);
+
                 await client
                     .from('tasks')
                     .delete()
                     .eq('member_id', memberId)
-                    .gte('date', startDate)
-                    .lte('date', endDate);
+                    .gte('date', minDate)
+                    .lte('date', maxDate);
 
                 if (tasksToInsert.length > 0) {
                     const { error } = await client
