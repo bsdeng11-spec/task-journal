@@ -282,7 +282,103 @@ body[data-bim-theme="cad-light"] .bim-status-pill {
     flex-shrink: 0;
 }
 
-/* Sleek Modern Theme Switcher */
+/* iOS-Style Sliding Theme Switch */
+.ios-theme-switch {
+    position: relative;
+    width: 60px;
+    height: 32px;
+    background: #1e293b;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    padding: 0 6px;
+    cursor: pointer;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.2s ease;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.ios-theme-switch:hover {
+    border-color: rgba(56, 189, 248, 0.6);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.ios-switch-bg-icon {
+    font-size: 0.72rem;
+    line-height: 1;
+    z-index: 1;
+    user-select: none;
+    transition: opacity 0.25s ease;
+}
+
+.ios-theme-switch .ios-switch-bg-icon.moon-bg {
+    opacity: 0.2;
+}
+
+.ios-theme-switch .ios-switch-bg-icon.sun-bg {
+    opacity: 0.75;
+}
+
+.ios-switch-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease, border-color 0.25s ease;
+    z-index: 2;
+}
+
+.ios-switch-thumb .thumb-icon {
+    font-size: 0.82rem;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.25s ease;
+}
+
+/* Light Mode active styles for iOS switch */
+.ios-theme-switch.light-active {
+    background: #e0f2fe;
+    border-color: #38bdf8;
+}
+
+.ios-theme-switch.light-active:hover {
+    border-color: #0284c7;
+    box-shadow: 0 0 10px rgba(2, 132, 199, 0.3);
+}
+
+.ios-theme-switch.light-active .ios-switch-thumb {
+    transform: translateX(29px);
+    background: #ffffff;
+    border-color: #cbd5e1;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ios-theme-switch.light-active .ios-switch-bg-icon.moon-bg {
+    opacity: 0.75;
+}
+
+.ios-theme-switch.light-active .ios-switch-bg-icon.sun-bg {
+    opacity: 0.2;
+}
+
+body[data-bim-theme="cad-light"] .ios-theme-switch {
+    background: #e0f2fe;
+    border-color: #7dd3fc;
+}
+
+/* Fallback Theme Switcher */
 .theme-toggle-wrap {
     display: inline-flex;
     align-items: center;

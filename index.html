@@ -41,17 +41,14 @@
                     <span class="executor-switch-tag">Switch ▾</span>
                 </div>
 
-                <!-- Sleek Theme Toggle -->
-                <div class="theme-toggle-wrap" title="Toggle Dark / Light Mode">
-                    <button type="button" class="theme-toggle-btn active" id="btnThemeDark" onclick="setAppTheme('dark')">
-                        <span class="theme-icon">🌙</span>
-                        <span>Dark</span>
-                    </button>
-                    <button type="button" class="theme-toggle-btn" id="btnThemeLight" onclick="setAppTheme('light')">
-                        <span class="theme-icon">☀️</span>
-                        <span>Light</span>
-                    </button>
-                </div>
+                <!-- iOS-Style Sliding Theme Switch -->
+                <button type="button" class="ios-theme-switch" id="themeSwitchBtn" onclick="toggleAppTheme()" title="Switch Theme (Dark / Light)" aria-label="Toggle Dark and Light theme">
+                    <span class="ios-switch-bg-icon moon-bg">🌙</span>
+                    <span class="ios-switch-bg-icon sun-bg">☀️</span>
+                    <span class="ios-switch-thumb">
+                        <span class="thumb-icon" id="switchThumbIcon">🌙</span>
+                    </span>
+                </button>
                 
                 <div class="nav-links">
                     <a href="index.html" class="nav-link active">Timesheet</a>
@@ -323,10 +320,20 @@
             try {
                 localStorage.setItem('app_theme_preference', theme);
             } catch(e) {}
-            const darkBtn = document.getElementById('btnThemeDark');
-            const lightBtn = document.getElementById('btnThemeLight');
-            if (darkBtn) darkBtn.classList.toggle('active', theme === 'dark');
-            if (lightBtn) lightBtn.classList.toggle('active', theme === 'light');
+            const switchBtn = document.getElementById('themeSwitchBtn');
+            const thumbIcon = document.getElementById('switchThumbIcon');
+            if (switchBtn) {
+                switchBtn.classList.toggle('light-active', theme === 'light');
+                switchBtn.setAttribute('title', theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode');
+            }
+            if (thumbIcon) {
+                thumbIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+            }
+        }
+
+        function toggleAppTheme() {
+            const isLight = document.body.getAttribute('data-bim-theme') === 'cad-light';
+            setAppTheme(isLight ? 'dark' : 'light');
         }
 
         (function() {
