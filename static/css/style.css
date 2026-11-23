@@ -1447,9 +1447,9 @@ body[data-bim-theme="cad-light"] .entry-error-box {
     text-decoration: underline;
 }
 
-/* Supabase Cloud Connection Status Pill */
+/* Supabase Cloud Connection Status Pill - Hidden to keep navbar clean */
 .supabase-status-pill {
-    display: inline-flex;
+    display: none !important;
     align-items: center;
     gap: 7px;
     height: 38px;
