@@ -245,7 +245,7 @@ body::after {
 }
 
 .bim-status-pill {
-    display: inline-flex;
+    display: none !important;
     align-items: center;
     gap: 6px;
     background: rgba(56, 189, 248, 0.15);
