@@ -33,6 +33,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     const paramEndDate = urlParams.get('end_date');
     const paramPeriodTitle = urlParams.get('period_title');
 
+    // Admin direct link support (?admin=true or ?key=admin123)
+    if (urlParams.get('admin') === 'true' || urlParams.get('key') === 'admin123') {
+        sessionStorage.setItem('tj_admin_authenticated', 'true');
+        localStorage.setItem('current_executor_id', '4');
+        localStorage.setItem('current_executor_name', 'Miki');
+        localStorage.setItem('current_executor_mp', '9771');
+    }
+
     // Default period setup if inputs are empty
     setDefaultPeriodDates(paramStartDate, paramEndDate, paramPeriodTitle);
 
@@ -804,6 +812,8 @@ const ADMIN_MP = '9771';
 const ADMIN_PASSWORD = 'admin123';
 
 function isCurrentExecutorAdmin() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true' || urlParams.get('key') === 'admin123') return true;
     if (sessionStorage.getItem('tj_admin_authenticated') === 'true') return true;
     const currentName = (localStorage.getItem('current_executor_name') || '').trim().toLowerCase();
     const currentMp = (localStorage.getItem('current_executor_mp') || '').trim();
